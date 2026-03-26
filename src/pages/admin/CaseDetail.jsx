@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 import StatusBadge from "../../components/StatusBadge";
@@ -22,8 +23,11 @@ function Field({ label, value }) {
 
 export default function CaseDetail() {
   const { id } = useParams();
-  const { cases } = useApp();
+  const { cases, updateCase, reviewers } = useApp();
   const c = cases.find((x) => x.id === id);
+  const [reviewerVal, setReviewerVal] = useState("");
+  const [reviewSaving, setReviewSaving] = useState(false);
+  const [reviewSaved, setReviewSaved] = useState(false);
 
   if (!c) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -35,6 +39,23 @@ export default function CaseDetail() {
   );
 
   const submittedAt = new Date(c.submittedAt).toLocaleString();
+
+  function handleAssignReviewer() {
+    if (!reviewerVal) return;
+    setReviewSaving(true);
+    updateCase(c.id, { reviewer: reviewerVal, reviewStatus: "In Review" }, `Reviewer assigned: ${reviewerVal}`);
+    setReviewSaving(false);
+    setReviewSaved(true);
+    setTimeout(() => setReviewSaved(false), 3000);
+  }
+
+  function handleMarkReviewed() {
+    updateCase(c.id, { reviewStatus: "Reviewed" }, "Status updated to Reviewed");
+  }
+
+  function handleCloseCase() {
+    updateCase(c.id, { caseStatus: "Closed" }, "Case closed");
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -147,11 +168,92 @@ export default function CaseDetail() {
           )}
         </Section>
 
-        {/* Reviewer */}
+        {/* Review & Assignment */}
         <Section title="Review & Assignment">
-          <Field label="Assigned Reviewer" value={c.reviewer || "Unassigned"} />
-          <Field label="Review Status" value={c.reviewStatus} />
+          <div className="mb-4">
+            <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Review Status</p>
+            <div className="flex items-center gap-3">
+              <StatusBadge status={c.reviewStatus} />
+              {c.reviewStatus !== "Reviewed" && (
+                <button
+                  onClick={handleMarkReviewed}
+                  className="text-xs text-teal-600 hover:text-teal-800 font-medium underline"
+                >
+                  Mark as Reviewed
+                </button>
+              )}
+              {c.caseStatus !== "Closed" && (
+                <button
+                  onClick={handleCloseCase}
+                  className="text-xs text-slate-400 hover:text-slate-700 font-medium underline"
+                >
+                  Close Case
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Assigned Reviewer</p>
+            {c.reviewer ? (
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-xs font-semibold text-teal-700">
+                  {c.reviewer.split(" ").map((n) => n[0]).join("")}
+                </div>
+                <span className="text-sm text-slate-700 font-medium">{c.reviewer}</span>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-400 italic">Unassigned</p>
+            )}
+          </div>
+
+          <div className="border-t border-slate-100 pt-4">
+            <p className="text-xs font-medium text-slate-500 mb-2">
+              {c.reviewer ? "Reassign reviewer" : "Assign a reviewer"}
+            </p>
+            <div className="flex gap-2">
+              <select
+                value={reviewerVal}
+                onChange={(e) => setReviewerVal(e.target.value)}
+                className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-400 bg-white"
+              >
+                <option value="">Select reviewer…</option>
+                {reviewers.map((r) => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </select>
+              <button
+                onClick={handleAssignReviewer}
+                disabled={!reviewerVal || reviewSaving}
+                className="px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 disabled:opacity-40 transition-colors"
+              >
+                {reviewSaved ? "✓ Assigned" : "Assign"}
+              </button>
+            </div>
+          </div>
+
           {c.expectedReturn && <Field label="Expected Return Date" value={c.expectedReturn} />}
+        </Section>
+
+        {/* Audit Trail */}
+        <Section title="Audit Trail">
+          {(!c.auditTrail || c.auditTrail.length === 0) ? (
+            <p className="text-sm text-slate-400 italic">No activity recorded.</p>
+          ) : (
+            <div className="space-y-0">
+              {[...c.auditTrail].reverse().map((entry, i) => (
+                <div key={i} className="flex gap-3 py-2.5 border-b border-slate-50 last:border-0">
+                  <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-2 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-slate-700">{entry.action}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {entry.by} · {new Date(entry.at).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </Section>
       </div>
     </div>

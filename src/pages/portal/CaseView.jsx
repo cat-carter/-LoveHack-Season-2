@@ -26,7 +26,7 @@ export default function CaseView() {
           ← My Reports
         </Link>
 
-        {/* Confirmation banner */}
+        {/* Submission confirmation banner */}
         {justSubmitted && (
           <div className="bg-teal-50 border border-teal-200 rounded-2xl p-5 mb-6 text-center">
             <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -38,10 +38,35 @@ export default function CaseView() {
           </div>
         )}
 
+        {/* Status notification banners */}
+        {!justSubmitted && c.reviewer && c.reviewStatus !== "Reviewed" && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mb-5 flex items-start gap-3">
+            <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+              <span className="text-blue-600 text-xs">👤</span>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-blue-800">Your report has been assigned</p>
+              <p className="text-xs text-blue-600 mt-0.5"><strong>{c.reviewer}</strong> has been assigned to review your report.</p>
+            </div>
+          </div>
+        )}
+        {!justSubmitted && c.reviewStatus === "Reviewed" && (
+          <div className="bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 mb-5 flex items-start gap-3">
+            <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center shrink-0 mt-0.5">
+              <span className="text-teal-600 text-xs">✓</span>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-teal-800">Your report has been reviewed</p>
+              <p className="text-xs text-teal-600 mt-0.5">
+                {c.reviewer ? `Reviewed by ${c.reviewer}.` : "Your report has been reviewed."} No further action is needed from you at this time.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div>
-            <Link to="/portal" className="text-xs text-slate-400 hover:text-teal-600 mb-2 block">← My Reports</Link>
             <h1 className="text-xl font-semibold text-slate-800">{c.id}</h1>
           </div>
           <div className="flex flex-col gap-1 items-end">

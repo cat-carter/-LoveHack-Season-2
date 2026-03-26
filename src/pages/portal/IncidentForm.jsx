@@ -126,34 +126,65 @@ export default function IncidentForm() {
 
           {step === 1 && (
             <>
-              <FormField label="Injury Type" required>
+              <FormField label="Incident / Injury Type" required>
                 <select className={selectCls} value={form.injuryType} onChange={(e) => update("injuryType", e.target.value)}>
                   <option value="">Select type</option>
-                  <option>Musculoskeletal</option>
-                  <option>Needlestick</option>
-                  <option>Slip / Fall</option>
-                  <option>Near Miss</option>
-                  <option>Burn</option>
-                  <option>Exposure</option>
-                  <option>Other</option>
+                  <optgroup label="Physical Injury">
+                    <option>Musculoskeletal</option>
+                    <option>Needlestick</option>
+                    <option>Slip / Fall</option>
+                    <option>Burn</option>
+                    <option>Exposure</option>
+                  </optgroup>
+                  <optgroup label="Other Incident">
+                    <option>Illness</option>
+                    <option>Property Damage</option>
+                    <option>Near Miss</option>
+                    <option>Other</option>
+                  </optgroup>
                 </select>
               </FormField>
-              <FormField label="Injury Description" required hint="Describe what happened and how the injury occurred.">
+
+              {form.injuryType === "Illness" && (
+                <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 mb-4 text-xs text-amber-800">
+                  <strong>Illness report:</strong> Include onset date, symptoms, and any suspected work-related exposure in the description below.
+                </div>
+              )}
+              {form.injuryType === "Property Damage" && (
+                <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 mb-4 text-xs text-amber-800">
+                  <strong>Property damage report:</strong> Describe what was damaged, estimated value if known, and how the damage occurred.
+                </div>
+              )}
+              <FormField
+                label={form.injuryType === "Property Damage" ? "Damage Description" : "Incident Description"}
+                required
+                hint="Describe what happened and how it occurred."
+              >
                 <textarea
                   rows={4}
                   className={textareaCls}
                   value={form.injuryDescription}
                   onChange={(e) => update("injuryDescription", e.target.value)}
-                  placeholder="e.g. Back strain while assisting patient transfer without mechanical lift..."
+                  placeholder={
+                    form.injuryType === "Property Damage"
+                      ? "e.g. Medical cart struck wall during patient transport, denting the cart frame..."
+                      : form.injuryType === "Illness"
+                      ? "e.g. Developed respiratory symptoms after prolonged exposure to cleaning chemicals..."
+                      : "e.g. Back strain while assisting patient transfer without mechanical lift..."
+                  }
                 />
               </FormField>
-              <FormField label="Medical Symptoms" required>
+              <FormField label={form.injuryType === "Property Damage" ? "Items Involved / Estimated Value" : "Medical Symptoms"} required={form.injuryType !== "Property Damage"}>
                 <textarea
                   rows={3}
                   className={textareaCls}
                   value={form.symptoms}
                   onChange={(e) => update("symptoms", e.target.value)}
-                  placeholder="e.g. Lower back pain, limited range of motion..."
+                  placeholder={
+                    form.injuryType === "Property Damage"
+                      ? "e.g. Medical supply cart, estimated replacement value $450..."
+                      : "e.g. Lower back pain, limited range of motion..."
+                  }
                 />
               </FormField>
             </>

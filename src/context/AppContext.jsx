@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from "react";
 import { mockCases, mockUsers } from "../data/mockData";
+import { mockReviewers } from "../data/mockData";
 
 const AppContext = createContext();
 
@@ -18,11 +19,12 @@ export function AppProvider({ children }) {
   }
 
   function submitCase(formData) {
+    const now = new Date().toISOString();
     const newCase = {
       ...formData,
       id: `CASE-2025-${String(cases.length + 1).padStart(3, "0")}`,
       submittedBy: user?.name || "Unknown",
-      submittedAt: new Date().toISOString(),
+      submittedAt: now,
       reviewStatus: "Pending",
       workersCompStatus: "None",
       osha300Status: "Pending",
@@ -31,9 +33,28 @@ export function AppProvider({ children }) {
       expectedReturn: null,
       caseStatus: "Open",
       reviewer: null,
+      auditTrail: [{ action: "Case created", by: user?.name || "Unknown", at: now }],
     };
     setCases((prev) => [newCase, ...prev]);
     return newCase;
+  }
+
+  function updateCase(caseId, updates, actionLabel) {
+    setCases((prev) =>
+      prev.map((c) => {
+        if (c.id !== caseId) return c;
+        const entry = {
+          action: actionLabel,
+          by: user?.name || "System",
+          at: new Date().toISOString(),
+        };
+        return {
+          ...c,
+          ...updates,
+          auditTrail: [...(c.auditTrail || []), entry],
+        };
+      })
+    );
   }
 
   function saveDraft(formData) {
@@ -47,7 +68,7 @@ export function AppProvider({ children }) {
   }
 
   return (
-    <AppContext.Provider value={{ user, login, logout, cases, submitCase, drafts, saveDraft }}>
+    <AppContext.Provider value={{ user, login, logout, cases, submitCase, updateCase, drafts, saveDraft, reviewers: mockReviewers }}>
       {children}
     </AppContext.Provider>
   );

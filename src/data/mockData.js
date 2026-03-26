@@ -1,3 +1,9 @@
+export const mockReviewers = [
+  "James Okafor",
+  "Priya Nair",
+  "Sandra Mitchell",
+];
+
 // Mock cases / incident reports
 export const mockCases = [
   {
@@ -24,6 +30,12 @@ export const mockCases = [
     expectedReturn: "2025-04-01",
     caseStatus: "Open",
     reviewer: "James Okafor",
+    auditTrail: [
+      { action: "Case created", by: "Maria Santos", at: "2025-03-10T08:15:00" },
+      { action: "Reviewer assigned: James Okafor", by: "James Okafor", at: "2025-03-10T09:00:00" },
+      { action: "Status updated to Reviewed", by: "James Okafor", at: "2025-03-10T11:30:00" },
+      { action: "Workers' comp form completed", by: "James Okafor", at: "2025-03-11T14:00:00" },
+    ],
   },
   {
     id: "CASE-2025-002",
@@ -49,6 +61,11 @@ export const mockCases = [
     expectedReturn: null,
     caseStatus: "Open",
     reviewer: "Priya Nair",
+    auditTrail: [
+      { action: "Case created", by: "Devon Williams", at: "2025-03-14T14:45:00" },
+      { action: "Reviewer assigned: Priya Nair", by: "James Okafor", at: "2025-03-14T15:30:00" },
+      { action: "Status updated to Reviewed", by: "Priya Nair", at: "2025-03-15T09:15:00" },
+    ],
   },
   {
     id: "CASE-2025-003",
@@ -74,6 +91,9 @@ export const mockCases = [
     expectedReturn: null,
     caseStatus: "Open",
     reviewer: null,
+    auditTrail: [
+      { action: "Case created", by: "Angela Torres", at: "2025-03-17T07:20:00" },
+    ],
   },
   {
     id: "CASE-2025-004",
@@ -99,6 +119,9 @@ export const mockCases = [
     expectedReturn: null,
     caseStatus: "Open",
     reviewer: null,
+    auditTrail: [
+      { action: "Case created", by: "Thomas Reyes", at: "2025-03-18T12:05:00" },
+    ],
   },
   {
     id: "CASE-2025-005",
@@ -124,6 +147,12 @@ export const mockCases = [
     expectedReturn: null,
     caseStatus: "Closed",
     reviewer: "James Okafor",
+    auditTrail: [
+      { action: "Case created", by: "Linda Park", at: "2025-02-28T15:45:00" },
+      { action: "Reviewer assigned: James Okafor", by: "James Okafor", at: "2025-02-28T16:30:00" },
+      { action: "Status updated to Reviewed", by: "James Okafor", at: "2025-03-01T10:00:00" },
+      { action: "Case closed", by: "James Okafor", at: "2025-03-01T10:05:00" },
+    ],
   },
 ];
 
