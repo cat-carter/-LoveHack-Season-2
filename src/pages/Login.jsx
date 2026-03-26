@@ -11,65 +11,98 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-slate-100 flex flex-col items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="flex flex-col items-center mb-10">
-          <div className="w-14 h-14 rounded-2xl bg-teal-600 flex items-center justify-center mb-4 shadow-md">
-            <span className="text-white text-2xl font-bold">S</span>
+    <div className="min-h-screen flex">
+      {/* Left panel */}
+      <div style={{ background: "#0f2d52" }} className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12">
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center">
+            <span style={{ color: "#0f2d52" }} className="text-base font-black tracking-tight">IQ</span>
           </div>
-          <h1 className="text-2xl font-semibold text-slate-800">SafeReport</h1>
-          <p className="text-slate-500 text-sm mt-1">Nursing Home Incident Reporting System</p>
+          <span className="text-white text-xl font-bold tracking-tight">IncidentIQ</span>
         </div>
 
-        {/* Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-          <h2 className="text-lg font-semibold text-slate-800 mb-1">Welcome back</h2>
-          <p className="text-sm text-slate-500 mb-6">Sign in to access your account</p>
+        <div>
+          <p className="text-blue-300 text-sm font-medium uppercase tracking-widest mb-4">From incident to insight</p>
+          <h1 className="text-4xl font-bold text-white leading-tight mb-6">
+            Smarter safety reporting<br />for nursing homes
+          </h1>
+          <p className="text-blue-200 text-base leading-relaxed max-w-sm">
+            Up to 96% of near-misses go unreported. IncidentIQ makes reporting fast, guided, and non-punitive — turning incident data into actionable intelligence.
+          </p>
 
-          <div className="space-y-3 mb-6">
+          <div className="mt-12 grid grid-cols-3 gap-6">
+            {[
+              { value: "96%", label: "of near-misses go unreported" },
+              { value: "600×", label: "near-misses per serious injury" },
+              { value: "2min", label: "average report time" },
+            ].map(({ value, label }) => (
+              <div key={label}>
+                <p className="text-3xl font-bold text-white">{value}</p>
+                <p className="text-blue-300 text-xs mt-1">{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <p className="text-blue-400 text-xs">Built for LovHack Season 2</p>
+      </div>
+
+      {/* Right panel */}
+      <div className="flex-1 flex items-center justify-center px-6 bg-slate-50">
+        <div className="w-full max-w-sm">
+          <div className="lg:hidden flex items-center gap-2 mb-8 justify-center">
+            <div style={{ background: "#0f2d52" }} className="w-9 h-9 rounded-xl flex items-center justify-center">
+              <span className="text-white text-sm font-black">IQ</span>
+            </div>
+            <span style={{ color: "#0f2d52" }} className="text-xl font-bold">IncidentIQ</span>
+          </div>
+
+          <h2 className="text-2xl font-bold text-slate-800 mb-1">Sign in</h2>
+          <p className="text-sm text-slate-500 mb-8">Access your facility's safety dashboard</p>
+
+          <div className="space-y-4 mb-6">
             <div>
-              <label className="text-xs font-medium text-slate-600 block mb-1">Username</label>
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide block mb-1.5">Username</label>
               <input
                 type="text"
-                defaultValue="demo@safereport.org"
-                className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-400 bg-slate-50"
+                defaultValue="demo@incidentiq.com"
+                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 bg-white"
+                style={{ "--tw-ring-color": "#0f2d52" }}
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-600 block mb-1">Password</label>
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide block mb-1.5">Password</label>
               <input
                 type="password"
                 defaultValue="••••••••"
-                className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-400 bg-slate-50"
+                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 bg-white"
               />
             </div>
           </div>
 
-          {/* Demo role selector */}
-          <p className="text-xs text-slate-400 text-center mb-3">Demo: select a role to sign in</p>
+          <p className="text-xs text-slate-400 text-center mb-3">Select a role to demo</p>
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => handleLogin("staff")}
-              className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl py-3 text-sm font-medium transition-colors shadow-sm"
+              className="py-3.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 shadow-sm"
+              style={{ background: "#0f2d52" }}
             >
-              Sign in as Staff
+              Frontline Staff
             </button>
             <button
               onClick={() => handleLogin("admin")}
-              className="bg-slate-800 hover:bg-slate-900 text-white rounded-xl py-3 text-sm font-medium transition-colors shadow-sm"
+              className="py-3.5 rounded-xl text-sm font-semibold transition-all hover:opacity-90 border-2 shadow-sm"
+              style={{ borderColor: "#0f2d52", color: "#0f2d52", background: "white" }}
             >
-              Sign in as Admin
+              Administrator
             </button>
           </div>
-        </div>
 
-        {/* Info strip */}
-        <div className="mt-6 bg-teal-50 border border-teal-100 rounded-xl p-4 text-center">
-          <p className="text-xs text-teal-700">
-            All reports are confidential and reviewed by your facility administrator.
-            Reporting is encouraged and non-punitive.
-          </p>
+          <div className="mt-8 bg-blue-50 border border-blue-100 rounded-xl p-4">
+            <p className="text-xs text-blue-700 text-center">
+              All reports are confidential. This facility maintains a <strong>non-punitive</strong> reporting culture.
+            </p>
+          </div>
         </div>
       </div>
     </div>

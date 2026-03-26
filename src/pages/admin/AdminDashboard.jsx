@@ -1,6 +1,6 @@
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend, LineChart, Line,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, BarChart, Bar, LabelList,
 } from "recharts";
 import { useApp } from "../../context/AppContext";
 import { injuryTypeData, incidentsOverTime, shiftData } from "../../data/mockData";
@@ -9,16 +9,51 @@ import TrendNarrative from "../../components/TrendNarrative";
 import AISafetyAssistant from "../../components/AISafetyAssistant";
 import { Link } from "react-router-dom";
 
-const PIE_COLORS = ["#0d9488", "#6366f1", "#f59e0b", "#f43f5e", "#94a3b8"];
+const NAVY = "#0f2d52";
+const COLORS = ["#0f2d52", "#1e6091", "#0d9488", "#f59e0b", "#94a3b8"];
 
-function StatCard({ label, value, sub, color = "teal" }) {
-  const ring = color === "teal" ? "bg-teal-50 text-teal-700" : color === "amber" ? "bg-amber-50 text-amber-700" : "bg-rose-50 text-rose-700";
+// ── Custom tooltip shared across charts ────────────────────────────────────
+function ChartTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col gap-1">
-      <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">{label}</span>
-      <span className="text-3xl font-semibold text-slate-800">{value}</span>
-      {sub && <span className={`text-xs font-medium px-2 py-0.5 rounded-full w-fit mt-1 ${ring}`}>{sub}</span>}
+    <div className="bg-white border border-slate-200 rounded-xl shadow-lg px-4 py-3">
+      {label && <p className="text-xs font-semibold text-slate-500 mb-1">{label}</p>}
+      {payload.map((p, i) => (
+        <p key={i} className="text-sm font-bold" style={{ color: p.color || NAVY }}>
+          {p.value} {p.name || "incidents"}
+        </p>
+      ))}
     </div>
+  );
+}
+
+// ── KPI card ────────────────────────────────────────────────────────────────
+function KpiCard({ label, value, sub, trend, accentColor = NAVY }) {
+  const trendUp = trend > 0;
+  return (
+    <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm flex flex-col gap-2 hover:shadow-md transition-shadow">
+      <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">{label}</span>
+      <div className="flex items-end gap-3">
+        <span className="text-4xl font-black text-slate-800">{value}</span>
+        {trend !== undefined && (
+          <span className={`text-xs font-semibold mb-1.5 px-2 py-0.5 rounded-full ${trendUp ? "bg-rose-50 text-rose-600" : "bg-teal-50 text-teal-700"}`}>
+            {trendUp ? "↑" : "↓"} {Math.abs(trend)}%
+          </span>
+        )}
+      </div>
+      {sub && <p className="text-xs text-slate-400">{sub}</p>}
+      <div className="h-0.5 w-12 rounded-full mt-1" style={{ background: accentColor }} />
+    </div>
+  );
+}
+
+// ── Custom donut label ───────────────────────────────────────────────────────
+function DonutLabel({ cx, cy, total }) {
+  return (
+    <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
+      <tspan x={cx} dy="-6" fontSize="28" fontWeight="800" fill="#0f172a">{total}</tspan>
+      <tspan x={cx} dy="22" fontSize="11" fill="#94a3b8">total</tspan>
+    </text>
   );
 }
 
@@ -27,142 +62,201 @@ export default function AdminDashboard() {
   const openCases = cases.filter((c) => c.caseStatus === "Open").length;
   const pendingReview = cases.filter((c) => c.reviewStatus === "Pending").length;
   const onLeave = cases.filter((c) => c.employeeStatus === "On Leave").length;
+  const total = injuryTypeData.reduce((s, d) => s + d.value, 0);
 
   const recent = cases.slice(0, 5);
 
+  // Month-over-month change
+  const last = incidentsOverTime[incidentsOverTime.length - 1]?.incidents;
+  const prev = incidentsOverTime[incidentsOverTime.length - 2]?.incidents;
+  const momPct = prev ? Math.round(((last - prev) / prev) * 100) : 0;
+
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-8 fade-in">
 
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-slate-800">Safety Dashboard</h1>
-          <p className="text-sm text-slate-500 mt-1">Overview of incident trends and case status — March 2025</p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-800">Safety Dashboard</h1>
+            <p className="text-sm text-slate-400 mt-1">Sunrise Nursing & Rehabilitation · March 2025</p>
+          </div>
+          <Link to="/admin/cases" className="text-xs font-semibold px-4 py-2 rounded-lg border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-sm">
+            View all cases →
+          </Link>
         </div>
 
-        {/* Stat cards */}
+        {/* KPI row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard label="Total Cases" value={cases.length} sub="All time" />
-          <StatCard label="Open Cases" value={openCases} sub="Needs attention" color="amber" />
-          <StatCard label="Pending Review" value={pendingReview} sub="Awaiting admin" color="amber" />
-          <StatCard label="Staff on Leave" value={onLeave} sub="Work-related injury" color="rose" />
+          <KpiCard label="Total Cases" value={cases.length} sub="All time" accentColor={NAVY} />
+          <KpiCard label="Open Cases" value={openCases} sub="Require resolution" trend={20} accentColor="#f59e0b" />
+          <KpiCard label="Pending Review" value={pendingReview} sub="Awaiting admin action" trend={0} accentColor="#1e6091" />
+          <KpiCard label="Staff on Leave" value={onLeave} sub="Work-related injury" trend={0} accentColor="#f43f5e" />
         </div>
 
-        {/* Charts row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-
-          {/* Incidents over time */}
-          <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6">
-            <h2 className="text-sm font-semibold text-slate-700 mb-4">Incidents Over Time</h2>
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={incidentsOverTime}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 12 }} />
-                <Line type="monotone" dataKey="incidents" stroke="#0d9488" strokeWidth={2.5} dot={{ r: 4, fill: "#0d9488" }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Injury type breakdown */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6">
-            <h2 className="text-sm font-semibold text-slate-700 mb-4">Injury Type Breakdown</h2>
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie data={injuryTypeData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} paddingAngle={3}>
-                  {injuryTypeData.map((_, i) => (
-                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-                <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 12 }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* AI Weekly Briefing */}
+        {/* AI Briefing */}
         <div className="mb-8">
           <TrendNarrative />
         </div>
 
-        {/* Shift bar + alert */}
+        {/* Charts row 1: Area + Donut */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+
+          {/* Area chart */}
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+            <div className="mb-5">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Incident trend</p>
+              <h3 className="text-base font-bold text-slate-800">
+                {momPct > 0 ? `↑ Up ${momPct}% from last month — monitor closely` : momPct < 0 ? `↓ Down ${Math.abs(momPct)}% from last month` : "Stable month-over-month"}
+              </h3>
+            </div>
+            <ResponsiveContainer width="100%" height={210}>
+              <AreaChart data={incidentsOverTime} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="10%" stopColor={NAVY} stopOpacity={0.18} />
+                    <stop offset="95%" stopColor={NAVY} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#94a3b8", fontWeight: 500 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: "#cbd5e1" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <Tooltip content={<ChartTooltip />} cursor={{ stroke: NAVY, strokeWidth: 1, strokeDasharray: "4 4" }} />
+                <Area type="monotone" dataKey="incidents" stroke={NAVY} strokeWidth={2.5} fill="url(#areaGrad)" dot={{ r: 4, fill: NAVY, strokeWidth: 2, stroke: "#fff" }} activeDot={{ r: 6, fill: NAVY }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Donut chart */}
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+            <div className="mb-4">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">By injury type</p>
+              <h3 className="text-base font-bold text-slate-800">Musculoskeletal leads at 35%</h3>
+            </div>
+            <ResponsiveContainer width="100%" height={180}>
+              <PieChart>
+                <Pie
+                  data={injuryTypeData}
+                  cx="50%" cy="50%"
+                  innerRadius={55} outerRadius={80}
+                  paddingAngle={3} dataKey="value"
+                  strokeWidth={0}
+                >
+                  {injuryTypeData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                </Pie>
+                <DonutLabel cx={160} cy={90} total={total} />
+                <Tooltip content={<ChartTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="space-y-1.5 mt-2">
+              {injuryTypeData.map((d, i) => (
+                <div key={d.name} className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
+                  <span className="text-xs text-slate-600 flex-1">{d.name}</span>
+                  <span className="text-xs font-bold text-slate-700">{d.value}</span>
+                  <span className="text-xs text-slate-400 w-8 text-right">{Math.round((d.value / total) * 100)}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Charts row 2: Horizontal bar + Alerts */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div className="lg:col-span-1 bg-white rounded-2xl border border-slate-200 p-6">
-            <h2 className="text-sm font-semibold text-slate-700 mb-4">Incidents by Shift</h2>
+
+          {/* Shift bar */}
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+            <div className="mb-4">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">By shift</p>
+              <h3 className="text-base font-bold text-slate-800">Day shift accounts for 44%</h3>
+            </div>
             <ResponsiveContainer width="100%" height={160}>
-              <BarChart data={shiftData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="shift" tick={{ fontSize: 12, fill: "#64748b" }} axisLine={false} tickLine={false} width={55} />
-                <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 12 }} />
-                <Bar dataKey="incidents" fill="#0d9488" radius={[0, 6, 6, 0]} />
+              <BarChart data={shiftData} layout="vertical" margin={{ left: 0, right: 30, top: 4, bottom: 4 }}>
+                <XAxis type="number" hide />
+                <YAxis type="category" dataKey="shift" tick={{ fontSize: 13, fill: "#475569", fontWeight: 600 }} axisLine={false} tickLine={false} width={52} />
+                <Tooltip content={<ChartTooltip />} cursor={{ fill: "#f8fafc" }} />
+                <Bar dataKey="incidents" fill={NAVY} radius={[0, 8, 8, 0]} barSize={22}>
+                  <LabelList dataKey="incidents" position="right" style={{ fontSize: 12, fontWeight: 700, fill: "#0f172a" }} />
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
 
           {/* Trend alerts */}
-          <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6">
-            <h2 className="text-sm font-semibold text-slate-700 mb-4">Trend Alerts</h2>
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+            <div className="mb-4">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">AI-detected trends</p>
+              <h3 className="text-base font-bold text-slate-800">3 items require your attention</h3>
+            </div>
             <div className="space-y-3">
-              <div className="flex gap-3 p-3 bg-amber-50 border border-amber-100 rounded-xl">
-                <span className="text-amber-500 text-lg">⚠</span>
-                <div>
-                  <p className="text-sm font-medium text-amber-900">Musculoskeletal injuries up 35% this quarter</p>
-                  <p className="text-xs text-amber-700 mt-0.5">Consider scheduling lift safety refresher training for Day and Evening shifts.</p>
+              {[
+                {
+                  icon: "↑",
+                  bg: "bg-rose-50", border: "border-rose-100", iconColor: "text-rose-500",
+                  title: "Musculoskeletal injuries up 35% this quarter",
+                  body: "14 of 40 incidents are muscle/back-related. Day shift CNAs are most affected. Consider scheduling a lift safety refresher.",
+                },
+                {
+                  icon: "⏱",
+                  bg: "bg-amber-50", border: "border-amber-100", iconColor: "text-amber-500",
+                  title: "Peak incident window: 06:00 – 09:00 on Day shift",
+                  body: "Morning care routines account for the highest risk period. Review staffing ratios at shift start.",
+                },
+                {
+                  icon: "↑",
+                  bg: "bg-teal-50", border: "border-teal-100", iconColor: "text-teal-600",
+                  title: "Near-miss reporting up 20% vs. last quarter",
+                  body: "Staff are engaging with the reporting system proactively — a strong safety culture signal worth acknowledging.",
+                },
+              ].map((a) => (
+                <div key={a.title} className={`flex gap-3 p-4 ${a.bg} border ${a.border} rounded-xl`}>
+                  <span className={`text-lg font-bold ${a.iconColor} mt-0.5 w-5 shrink-0`}>{a.icon}</span>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800">{a.title}</p>
+                    <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">{a.body}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-3 p-3 bg-blue-50 border border-blue-100 rounded-xl">
-                <span className="text-blue-500 text-lg">ℹ</span>
-                <div>
-                  <p className="text-sm font-medium text-blue-900">Day shift accounts for 44% of all incidents</p>
-                  <p className="text-xs text-blue-700 mt-0.5">Peak incident time: 06:00–09:00. Review staffing ratios during morning care routines.</p>
-                </div>
-              </div>
-              <div className="flex gap-3 p-3 bg-teal-50 border border-teal-100 rounded-xl">
-                <span className="text-teal-500 text-lg">✓</span>
-                <div>
-                  <p className="text-sm font-medium text-teal-900">Near-miss reporting increased 20% vs. last quarter</p>
-                  <p className="text-xs text-teal-700 mt-0.5">Positive trend — staff are engaging with the reporting system proactively.</p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Recent cases table */}
-        <div className="bg-white rounded-2xl border border-slate-200">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-            <h2 className="text-sm font-semibold text-slate-700">Recent Cases</h2>
-            <Link to="/admin/cases" className="text-xs text-teal-600 hover:underline font-medium">View all →</Link>
+        {/* Recent cases */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-50">
+            <div>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-0.5">Recent cases</p>
+              <h3 className="text-base font-bold text-slate-800">Latest incident reports</h3>
+            </div>
+            <Link to="/admin/cases" className="text-xs font-semibold text-blue-600 hover:underline">View all →</Link>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100">
-                  {["Case #", "Employee", "Injury Type", "Date", "Review", "Case Status"].map((h) => (
-                    <th key={h} className="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wide">{h}</th>
+                <tr className="border-b border-slate-50 bg-slate-50">
+                  {["Case #", "Employee", "Injury Type", "Date", "Review", "Case"].map((h) => (
+                    <th key={h} className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {recent.map((c) => (
                   <tr key={c.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-3">
-                      <Link to={`/admin/cases/${c.id}`} className="text-teal-600 hover:underline font-medium">{c.id}</Link>
+                    <td className="px-6 py-3.5">
+                      <Link to={`/admin/cases/${c.id}`} className="font-semibold hover:underline" style={{ color: NAVY }}>{c.id}</Link>
                     </td>
-                    <td className="px-6 py-3 text-slate-700">{c.employeeName}</td>
-                    <td className="px-6 py-3 text-slate-600">{c.injuryType}</td>
-                    <td className="px-6 py-3 text-slate-500">{c.incidentDate}</td>
-                    <td className="px-6 py-3"><StatusBadge status={c.reviewStatus} /></td>
-                    <td className="px-6 py-3"><StatusBadge status={c.caseStatus} /></td>
+                    <td className="px-6 py-3.5 font-medium text-slate-700">{c.employeeName}</td>
+                    <td className="px-6 py-3.5 text-slate-500">{c.injuryType}</td>
+                    <td className="px-6 py-3.5 text-slate-400 tabular-nums">{c.incidentDate}</td>
+                    <td className="px-6 py-3.5"><StatusBadge status={c.reviewStatus} /></td>
+                    <td className="px-6 py-3.5"><StatusBadge status={c.caseStatus} /></td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         </div>
+
       </div>
       <AISafetyAssistant />
     </div>

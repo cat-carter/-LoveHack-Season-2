@@ -2,61 +2,80 @@ import { Link } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 import StatusBadge from "../../components/StatusBadge";
 
+const NAVY = "#0f2d52";
+
 export default function StaffPortal() {
   const { cases, user, drafts } = useApp();
   const myCases = cases.filter((c) => c.employeeName === user?.name || c.submittedBy === user?.name);
+  const openCount = myCases.filter((c) => c.caseStatus === "Open").length;
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="max-w-2xl mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto px-4 py-8 fade-in">
 
-        {/* Welcome */}
-        <div className="mb-6">
-          <h1 className="text-xl font-semibold text-slate-800">Welcome, {user?.name}</h1>
-          <p className="text-sm text-slate-500 mt-1">{user?.position}</p>
+        {/* Welcome header */}
+        <div className="mb-8">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Staff Portal</p>
+          <h1 className="text-2xl font-bold text-slate-800">Welcome back, {user?.name?.split(" ")[0]}</h1>
+          <p className="text-sm text-slate-400 mt-0.5">{user?.position} · Sunrise Nursing & Rehabilitation</p>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-3 mb-8">
+          {[
+            { value: myCases.length, label: "Total reports" },
+            { value: openCount, label: "Open cases", color: "#f59e0b" },
+            { value: drafts.length, label: "Saved drafts", color: "#64748b" },
+          ].map(({ value, label, color }) => (
+            <div key={label} className="bg-white rounded-xl border border-slate-100 shadow-sm px-4 py-3 text-center">
+              <p className="text-2xl font-black" style={{ color: color || NAVY }}>{value}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{label}</p>
+            </div>
+          ))}
         </div>
 
         {/* Quick actions */}
-        <div className="grid grid-cols-2 gap-3 mb-8">
+        <div className="grid grid-cols-2 gap-3 mb-6">
           <Link
             to="/portal/report/new"
-            className="bg-teal-600 hover:bg-teal-700 text-white rounded-2xl p-5 flex flex-col gap-2 transition-colors shadow-sm"
+            className="text-white rounded-2xl p-5 flex flex-col gap-2 transition-all hover:opacity-90 shadow-sm"
+            style={{ background: NAVY }}
           >
             <span className="text-2xl">📋</span>
-            <span className="font-semibold text-sm">New Incident Report</span>
-            <span className="text-xs text-teal-100">Report a workplace injury or near miss</span>
+            <span className="font-bold text-sm">New Incident Report</span>
+            <span className="text-xs opacity-70">Report a workplace injury or near miss</span>
           </Link>
           <Link
             to="/portal/report/new?type=near-miss"
-            className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-2xl p-5 flex flex-col gap-2 transition-colors"
+            className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-2xl p-5 flex flex-col gap-2 transition-colors shadow-sm"
           >
             <span className="text-2xl">⚠️</span>
-            <span className="font-semibold text-sm">Near Miss Report</span>
+            <span className="font-bold text-sm">Near Miss Report</span>
             <span className="text-xs text-slate-400">Report a close call — no injury required</span>
           </Link>
         </div>
 
-        {/* Encouragement strip */}
-        <div className="bg-teal-50 border border-teal-100 rounded-2xl p-4 mb-8 flex gap-3 items-start">
-          <span className="text-teal-500 text-xl">🛡</span>
+        {/* Safety encouragement */}
+        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-8 flex gap-3 items-start">
+          <span className="text-blue-500 text-lg mt-0.5">🛡</span>
           <div>
-            <p className="text-sm font-medium text-teal-800">Reporting is safe and encouraged</p>
-            <p className="text-xs text-teal-600 mt-0.5">All reports are reviewed by your administrator. This facility has a non-punitive reporting culture.</p>
+            <p className="text-sm font-semibold text-slate-800">Reporting is safe and encouraged</p>
+            <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">All reports are reviewed by your administrator. This facility maintains a <strong>non-punitive</strong> reporting culture.</p>
           </div>
         </div>
 
         {/* Drafts */}
         {drafts.length > 0 && (
           <div className="mb-6">
-            <h2 className="text-sm font-semibold text-slate-700 mb-3">Saved Drafts</h2>
+            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Saved Drafts</h2>
             <div className="space-y-2">
               {drafts.map((d) => (
                 <div key={d.draftId} className="bg-white border border-amber-200 rounded-xl p-4 flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-700">Draft — {d.incidentDate || "No date"}</p>
-                    <p className="text-xs text-slate-400">Saved {new Date(d.savedAt).toLocaleString()}</p>
+                    <p className="text-sm font-semibold text-slate-700">Draft — {d.incidentDate || "No date"}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Saved {new Date(d.savedAt).toLocaleString()}</p>
                   </div>
-                  <Link to="/portal/report/new" className="text-xs text-teal-600 font-medium hover:underline">Continue →</Link>
+                  <Link to="/portal/report/new" className="text-xs font-semibold hover:underline" style={{ color: NAVY }}>Continue →</Link>
                 </div>
               ))}
             </div>
@@ -65,10 +84,17 @@ export default function StaffPortal() {
 
         {/* My reports */}
         <div>
-          <h2 className="text-sm font-semibold text-slate-700 mb-3">My Submitted Reports</h2>
+          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">My Submitted Reports</h2>
           {myCases.length === 0 ? (
-            <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center">
+            <div className="bg-white border border-slate-100 rounded-2xl p-10 text-center shadow-sm">
               <p className="text-slate-400 text-sm">No reports submitted yet.</p>
+              <Link
+                to="/portal/report/new"
+                className="mt-4 inline-block text-xs font-semibold px-4 py-2 rounded-xl text-white"
+                style={{ background: NAVY }}
+              >
+                Submit your first report
+              </Link>
             </div>
           ) : (
             <div className="space-y-3">
@@ -76,11 +102,11 @@ export default function StaffPortal() {
                 <Link
                   key={c.id}
                   to={`/portal/cases/${c.id}`}
-                  className="block bg-white border border-slate-200 rounded-2xl p-4 hover:bg-slate-50 transition-colors"
+                  className="block bg-white border border-slate-100 rounded-2xl p-4 hover:bg-slate-50 transition-colors shadow-sm"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-slate-800">{c.id}</p>
+                      <p className="text-sm font-bold" style={{ color: NAVY }}>{c.id}</p>
                       <p className="text-sm text-slate-600 mt-0.5">{c.injuryType} · {c.incidentDate}</p>
                       <p className="text-xs text-slate-400 mt-1 line-clamp-1">{c.injuryDescription}</p>
                     </div>
@@ -94,6 +120,7 @@ export default function StaffPortal() {
             </div>
           )}
         </div>
+
       </div>
     </div>
   );
