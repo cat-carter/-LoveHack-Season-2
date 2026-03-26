@@ -43,7 +43,7 @@ export default function CaseDetail() {
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div>
-            <Link to="/admin/cases" className="text-xs text-slate-400 hover:text-teal-600 mb-2 block">← Back to cases</Link>
+            <Link to="/admin/cases" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 mb-3 transition-colors">← All Cases</Link>
             <h1 className="text-2xl font-semibold text-slate-800">{c.id}</h1>
             <p className="text-sm text-slate-500 mt-1">Submitted by {c.submittedBy} · {submittedAt}</p>
           </div>

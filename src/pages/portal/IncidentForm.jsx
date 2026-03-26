@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 
 const STEPS = ["Incident Details", "Injury Information", "Medical Evaluation", "Review & Submit"];
@@ -79,6 +79,9 @@ export default function IncidentForm() {
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-xl mx-auto px-4 py-8">
+        <Link to="/portal" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 mb-5 transition-colors">
+          ← My Reports
+        </Link>
         <h1 className="text-xl font-semibold text-slate-800 mb-1">New Incident Report</h1>
         <p className="text-sm text-slate-500 mb-6">Please complete all required fields. You can save and return at any time.</p>
 

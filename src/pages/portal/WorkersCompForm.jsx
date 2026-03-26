@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 
 const STEPS = ["Employee Info", "Incident Details", "Injury & Treatment", "Review & Submit"];
@@ -116,7 +116,12 @@ export default function WorkersCompForm() {
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-xl mx-auto px-4 py-8">
         <div className="mb-6">
-          <span className="text-xs text-slate-400">Linked to case: <strong>{caseId}</strong></span>
+          <Link
+            to={user?.role === "admin" ? `/admin/cases/${caseId}` : `/portal/cases/${caseId}`}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 mb-4 transition-colors"
+          >
+            ← Back to {caseId}
+          </Link>
           <h1 className="text-xl font-semibold text-slate-800 mt-1">Workers' Compensation Form</h1>
           <p className="text-sm text-slate-500 mt-0.5">Complete all required fields. Employee info is pre-filled where available.</p>
         </div>

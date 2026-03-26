@@ -13,7 +13,7 @@ export default function OSHA300() {
             <h1 className="text-2xl font-semibold text-slate-800">OSHA 300 Log</h1>
             <p className="text-sm text-slate-500 mt-1">Log of Work-Related Injuries and Illnesses · Year: 2025</p>
           </div>
-          <Link to="/admin" className="text-xs text-slate-400 hover:text-teal-600">← Dashboard</Link>
+          <Link to="/admin" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">← Dashboard</Link>
         </div>
 
         <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-6 text-sm text-amber-800">

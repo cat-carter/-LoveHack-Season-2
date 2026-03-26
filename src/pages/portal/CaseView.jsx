@@ -22,6 +22,10 @@ export default function CaseView() {
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-xl mx-auto px-4 py-8">
 
+        <Link to="/portal" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 mb-5 transition-colors">
+          ← My Reports
+        </Link>
+
         {/* Confirmation banner */}
         {justSubmitted && (
           <div className="bg-teal-50 border border-teal-200 rounded-2xl p-5 mb-6 text-center">

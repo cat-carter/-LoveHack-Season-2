@@ -15,10 +15,13 @@ export default function Navbar() {
 
   return (
     <nav style={{ background: "#0f2d52" }} className="px-6 py-3 flex items-center justify-between sticky top-0 z-50 shadow-md">
-      <div className="flex items-center gap-2.5">
+      <Link
+        to={user ? (user.role === "admin" ? "/admin" : "/portal") : "/"}
+        className="flex items-center gap-2.5 group"
+      >
         <Logo size={28} shieldColor="white" signalColor="#0f2d52" />
-        <span className="text-white font-bold text-lg tracking-tight">IncidentIQ</span>
-      </div>
+        <span className="text-white font-bold text-lg tracking-tight group-hover:opacity-80 transition-opacity">IncidentIQ</span>
+      </Link>
 
       {user && (
         <div className="flex items-center gap-5">
