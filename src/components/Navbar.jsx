@@ -1,10 +1,24 @@
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import Logo from "./Logo";
 
+function timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
 export default function Navbar() {
   const { user, logout, cases } = useApp();
   const navigate = useNavigate();
+  const [panelOpen, setPanelOpen] = useState(false);
+  const bellRef = useRef(null);
 
   function handleLogout() {
     logout();
@@ -13,17 +27,51 @@ export default function Navbar() {
 
   const isAdmin = user?.role === "admin";
 
-  // Badge count — admin: unreviewed pending cases; staff: cases with updates (assigned or reviewed)
-  const badgeCount = isAdmin
-    ? cases.filter((c) => c.reviewStatus === "Pending").length
-    : cases.filter(
-        (c) =>
-          (c.submittedBy === user?.name || c.employeeName === user?.name) &&
-          c.reviewer !== null
-      ).length;
+  // Build notification items
+  const notifications = isAdmin
+    ? cases
+        .filter((c) => c.reviewStatus === "Pending")
+        .map((c) => ({
+          id: c.id,
+          icon: "📋",
+          title: "Awaiting review",
+          detail: `${c.id} · ${c.injuryType} · ${c.employeeName}`,
+          time: c.submittedAt,
+          href: `/admin/cases/${c.id}`,
+        }))
+    : cases
+        .filter(
+          (c) =>
+            (c.submittedBy === user?.name || c.employeeName === user?.name) &&
+            c.reviewer !== null
+        )
+        .map((c) => ({
+          id: c.id,
+          icon: c.reviewStatus === "Reviewed" ? "✅" : "👤",
+          title:
+            c.reviewStatus === "Reviewed"
+              ? "Your report was reviewed"
+              : `Assigned to ${c.reviewer}`,
+          detail: `${c.id} · ${c.injuryType}`,
+          time: c.submittedAt,
+          href: `/portal/cases/${c.id}`,
+        }));
+
+  const badgeCount = notifications.length;
+
+  // Close panel on outside click
+  useEffect(() => {
+    function handleClick(e) {
+      if (bellRef.current && !bellRef.current.contains(e.target)) {
+        setPanelOpen(false);
+      }
+    }
+    if (panelOpen) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [panelOpen]);
 
   return (
-    <nav style={{ background: "#0f2d52" }} className="px-6 py-3 flex items-center justify-between sticky top-0 z-50 shadow-md">
+    <nav style={{ background: "#0f2d52" }} className="px-6 py-3 flex items-center justify-between sticky top-0 z-50 shadow-md print:hidden">
       <Link
         to={user ? (user.role === "admin" ? "/admin" : "/portal") : "/"}
         className="flex items-center gap-2.5 group"
@@ -47,21 +95,73 @@ export default function Navbar() {
             </>
           )}
 
-          {/* Notification bell */}
-          <Link
-            to={isAdmin ? "/admin/cases" : "/portal"}
-            className="relative flex items-center justify-center w-8 h-8 rounded-full hover:bg-blue-700 transition-colors"
-            title={isAdmin ? `${badgeCount} pending review` : `${badgeCount} case update${badgeCount !== 1 ? "s" : ""}`}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-blue-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-            {badgeCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
-                {badgeCount > 99 ? "99+" : badgeCount}
-              </span>
+          {/* Notification bell + panel */}
+          <div ref={bellRef} className="relative">
+            <button
+              onClick={() => setPanelOpen((o) => !o)}
+              className="relative flex items-center justify-center w-8 h-8 rounded-full hover:bg-blue-700 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-blue-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              {badgeCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
+                  {badgeCount > 99 ? "99+" : badgeCount}
+                </span>
+              )}
+            </button>
+
+            {/* Dropdown panel */}
+            {panelOpen && (
+              <div className="absolute right-0 top-11 w-80 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden z-50">
+                {/* Panel header */}
+                <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-slate-800">Notifications</h3>
+                  {badgeCount > 0 && (
+                    <span className="text-xs font-semibold text-rose-500">{badgeCount} new</span>
+                  )}
+                </div>
+
+                {/* Notification list */}
+                {notifications.length === 0 ? (
+                  <div className="px-4 py-8 text-center">
+                    <p className="text-2xl mb-2">🔔</p>
+                    <p className="text-sm text-slate-500">You're all caught up!</p>
+                    <p className="text-xs text-slate-400 mt-1">No pending notifications.</p>
+                  </div>
+                ) : (
+                  <div className="max-h-80 overflow-y-auto divide-y divide-slate-50">
+                    {notifications.map((n) => (
+                      <Link
+                        key={n.id}
+                        to={n.href}
+                        onClick={() => setPanelOpen(false)}
+                        className="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition-colors"
+                      >
+                        <span className="text-base mt-0.5 shrink-0">{n.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-800 leading-snug">{n.title}</p>
+                          <p className="text-xs text-slate-500 mt-0.5 truncate">{n.detail}</p>
+                        </div>
+                        <span className="text-[10px] text-slate-400 shrink-0 mt-1">{timeAgo(n.time)}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
+                {/* Footer */}
+                <div className="border-t border-slate-100 px-4 py-2.5">
+                  <Link
+                    to={isAdmin ? "/admin/cases" : "/portal"}
+                    onClick={() => setPanelOpen(false)}
+                    className="text-xs font-medium text-teal-600 hover:text-teal-800 transition-colors"
+                  >
+                    View all cases →
+                  </Link>
+                </div>
+              </div>
             )}
-          </Link>
+          </div>
 
           <div className="flex items-center gap-3 ml-1 pl-4 border-l border-blue-700">
             <Link to={isAdmin ? "/admin/profile" : "/portal/profile"} className="flex items-center gap-2 group">
