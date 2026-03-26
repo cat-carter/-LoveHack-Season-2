@@ -214,6 +214,50 @@ Keep it warm, clear, and action-oriented. No headers or bullet points — flowin
   }
 });
 
+// ─── POST /api/coach ───────────────────────────────────────────────────────
+// Smart form coach: returns 2–3 specific follow-up prompts for an incident description
+app.post("/api/coach", async (req, res) => {
+  const { description, injuryType, location, shift } = req.body;
+
+  if (!description || description.trim().length < 10) {
+    return res.json({ suggestions: [] });
+  }
+
+  const prompt = `You are a workplace safety reporting coach helping a nursing home employee write a complete incident report.
+
+Incident type: ${injuryType || "not specified"}
+Location: ${location || "not specified"}
+Shift: ${shift || "not specified"}
+Description written so far: "${description}"
+
+Review the description and identify 2–3 specific details that are missing or vague that would make this a more complete incident report. Focus on:
+- What the employee was doing immediately before the incident
+- Whether assistive equipment (lift, gait belt, call light) was available or used
+- Environmental factors (wet floor, lighting, clutter)
+- Patient/resident involvement details
+- Witness presence
+
+Return ONLY a JSON object in this exact format — no explanation, no markdown:
+{"suggestions": ["short actionable question 1", "short actionable question 2", "short actionable question 3"]}
+
+Each suggestion must be a short question under 12 words. Only return questions for details that are genuinely missing from the description.`;
+
+  try {
+    const response = await client.messages.create({
+      model: "claude-opus-4-6",
+      max_tokens: 256,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const text = response.content[0].text.trim();
+    const parsed = JSON.parse(text);
+    res.json(parsed);
+  } catch (err) {
+    console.error("Coach API error:", err.message);
+    res.status(500).json({ suggestions: [] });
+  }
+});
+
 // ─── POST /api/notify ──────────────────────────────────────────────────────
 // Sends email notifications via Gmail (Nodemailer)
 // type: "new_case" | "reviewer_assigned" | "case_reviewed"

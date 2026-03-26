@@ -18,7 +18,18 @@ export default function Navbar() {
   const { user, logout, cases } = useApp();
   const navigate = useNavigate();
   const [panelOpen, setPanelOpen] = useState(false);
+  const [dismissed, setDismissed] = useState(new Set());
   const bellRef = useRef(null);
+
+  function dismissOne(id, e) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDismissed((prev) => new Set([...prev, id]));
+  }
+
+  function dismissAll() {
+    setDismissed(new Set(notifications.map((n) => n.id)));
+  }
 
   function handleLogout() {
     logout();
@@ -57,7 +68,8 @@ export default function Navbar() {
           href: `/portal/cases/${c.id}`,
         }));
 
-  const badgeCount = notifications.length;
+  const visibleNotifications = notifications.filter((n) => !dismissed.has(n.id));
+  const badgeCount = visibleNotifications.length;
 
   // Close panel on outside click
   useEffect(() => {
@@ -117,13 +129,18 @@ export default function Navbar() {
                 {/* Panel header */}
                 <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-slate-800">Notifications</h3>
-                  {badgeCount > 0 && (
-                    <span className="text-xs font-semibold text-rose-500">{badgeCount} new</span>
+                  {visibleNotifications.length > 0 && (
+                    <button
+                      onClick={dismissAll}
+                      className="text-xs text-slate-400 hover:text-slate-700 font-medium transition-colors"
+                    >
+                      Mark all as read
+                    </button>
                   )}
                 </div>
 
                 {/* Notification list */}
-                {notifications.length === 0 ? (
+                {visibleNotifications.length === 0 ? (
                   <div className="px-4 py-8 text-center">
                     <p className="text-2xl mb-2">🔔</p>
                     <p className="text-sm text-slate-500">You're all caught up!</p>
@@ -131,20 +148,28 @@ export default function Navbar() {
                   </div>
                 ) : (
                   <div className="max-h-80 overflow-y-auto divide-y divide-slate-50">
-                    {notifications.map((n) => (
-                      <Link
-                        key={n.id}
-                        to={n.href}
-                        onClick={() => setPanelOpen(false)}
-                        className="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition-colors"
-                      >
-                        <span className="text-base mt-0.5 shrink-0">{n.icon}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-slate-800 leading-snug">{n.title}</p>
-                          <p className="text-xs text-slate-500 mt-0.5 truncate">{n.detail}</p>
-                        </div>
-                        <span className="text-[10px] text-slate-400 shrink-0 mt-1">{timeAgo(n.time)}</span>
-                      </Link>
+                    {visibleNotifications.map((n) => (
+                      <div key={n.id} className="flex items-start group hover:bg-slate-50 transition-colors">
+                        <Link
+                          to={n.href}
+                          onClick={() => setPanelOpen(false)}
+                          className="flex items-start gap-3 px-4 py-3 flex-1 min-w-0"
+                        >
+                          <span className="text-base mt-0.5 shrink-0">{n.icon}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-slate-800 leading-snug">{n.title}</p>
+                            <p className="text-xs text-slate-500 mt-0.5 truncate">{n.detail}</p>
+                          </div>
+                          <span className="text-[10px] text-slate-400 shrink-0 mt-1 mr-1">{timeAgo(n.time)}</span>
+                        </Link>
+                        <button
+                          onClick={(e) => dismissOne(n.id, e)}
+                          className="shrink-0 px-2 py-3 text-slate-300 hover:text-slate-600 opacity-0 group-hover:opacity-100 transition-all"
+                          title="Dismiss"
+                        >
+                          ✕
+                        </button>
+                      </div>
                     ))}
                   </div>
                 )}

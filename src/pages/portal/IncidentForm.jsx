@@ -2,6 +2,79 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 
+function FormCoach({ description, injuryType, location, shift, onApply }) {
+  const [suggestions, setSuggestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [used, setUsed] = useState(new Set());
+
+  async function fetchSuggestions() {
+    if (!description || description.trim().length < 10) return;
+    setLoading(true);
+    setSuggestions([]);
+    setUsed(new Set());
+    try {
+      const res = await fetch("/api/coach", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description, injuryType, location, shift }),
+      });
+      const data = await res.json();
+      setSuggestions(data.suggestions || []);
+    } catch {
+      setSuggestions([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function apply(suggestion, i) {
+    onApply(suggestion);
+    setUsed((prev) => new Set([...prev, i]));
+  }
+
+  return (
+    <div className="mb-4">
+      <button
+        type="button"
+        onClick={fetchSuggestions}
+        disabled={loading || !description || description.trim().length < 10}
+        className="flex items-center gap-1.5 text-xs font-medium text-teal-600 hover:text-teal-800 disabled:text-slate-300 disabled:cursor-not-allowed transition-colors"
+      >
+        {loading ? (
+          <>
+            <span className="inline-block w-3 h-3 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
+            Reviewing your description…
+          </>
+        ) : (
+          <>✨ Get writing tips</>
+        )}
+      </button>
+
+      {suggestions.length > 0 && (
+        <div className="mt-3 space-y-2">
+          <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">Consider adding:</p>
+          {suggestions.map((s, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => apply(s, i)}
+              disabled={used.has(i)}
+              className={`w-full text-left text-xs px-3 py-2 rounded-lg border transition-all flex items-start gap-2
+                ${used.has(i)
+                  ? "bg-teal-50 border-teal-200 text-teal-600 opacity-60 cursor-default"
+                  : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-teal-50 hover:border-teal-300 hover:text-teal-700"
+                }`}
+            >
+              <span className="shrink-0 mt-0.5">{used.has(i) ? "✓" : "💬"}</span>
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const STEPS = ["Incident Details", "Injury Information", "Medical Evaluation", "Review & Submit"];
 
 function StepIndicator({ current, total }) {
@@ -174,6 +247,15 @@ export default function IncidentForm() {
                   }
                 />
               </FormField>
+              <FormCoach
+                description={form.injuryDescription}
+                injuryType={form.injuryType}
+                location={form.incidentLocation}
+                shift={form.shift}
+                onApply={(suggestion) =>
+                  update("injuryDescription", form.injuryDescription + (form.injuryDescription.endsWith(" ") || form.injuryDescription === "" ? "" : " ") + suggestion + " ")
+                }
+              />
               <FormField label={form.injuryType === "Property Damage" ? "Items Involved / Estimated Value" : "Medical Symptoms"} required={form.injuryType !== "Property Damage"}>
                 <textarea
                   rows={3}
