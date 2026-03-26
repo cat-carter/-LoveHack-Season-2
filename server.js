@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import Anthropic from "@anthropic-ai/sdk";
+import nodemailer from "nodemailer";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
@@ -21,6 +22,106 @@ app.use(cors());
 app.use(express.json());
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+// ─── Nodemailer transporter (Gmail) ────────────────────────────────────────
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD,
+  },
+});
+
+function emailTemplates(type, c) {
+  const facility = "Sunrise Nursing & Rehabilitation";
+  const base = {
+    from: `"IncidentIQ — ${facility}" <${process.env.GMAIL_USER}>`,
+  };
+
+  if (type === "new_case") {
+    return {
+      ...base,
+      to: process.env.ADMIN_EMAIL,
+      subject: `[IncidentIQ] New incident report submitted — ${c.id}`,
+      html: `
+        <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;color:#1e293b">
+          <div style="background:#0f2d52;padding:20px 24px;border-radius:8px 8px 0 0">
+            <h1 style="color:white;font-size:18px;margin:0">IncidentIQ</h1>
+            <p style="color:#93c5fd;font-size:12px;margin:4px 0 0">Incident Reporting & Safety Analytics</p>
+          </div>
+          <div style="border:1px solid #e2e8f0;border-top:none;padding:24px;border-radius:0 0 8px 8px">
+            <p style="color:#0d9488;font-weight:700;font-size:14px;margin:0 0 16px">🆕 New Incident Report</p>
+            <table style="width:100%;font-size:14px;border-collapse:collapse">
+              <tr><td style="color:#64748b;padding:6px 0;width:140px">Case Number</td><td style="font-weight:600">${c.id}</td></tr>
+              <tr><td style="color:#64748b;padding:6px 0">Employee</td><td>${c.employeeName}</td></tr>
+              <tr><td style="color:#64748b;padding:6px 0">Incident Type</td><td>${c.injuryType}</td></tr>
+              <tr><td style="color:#64748b;padding:6px 0">Date</td><td>${c.incidentDate} at ${c.incidentTime}</td></tr>
+              <tr><td style="color:#64748b;padding:6px 0">Location</td><td>${c.incidentLocation}</td></tr>
+            </table>
+            <p style="font-size:13px;color:#475569;margin:16px 0 0">Log in to IncidentIQ to review this case and assign a reviewer.</p>
+            <p style="font-size:11px;color:#94a3b8;margin:20px 0 0;padding-top:16px;border-top:1px solid #f1f5f9">${facility} · Automated notification from IncidentIQ</p>
+          </div>
+        </div>`,
+    };
+  }
+
+  if (type === "reviewer_assigned") {
+    return {
+      ...base,
+      to: process.env.STAFF_EMAIL,
+      subject: `[IncidentIQ] Your report has been assigned — ${c.id}`,
+      html: `
+        <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;color:#1e293b">
+          <div style="background:#0f2d52;padding:20px 24px;border-radius:8px 8px 0 0">
+            <h1 style="color:white;font-size:18px;margin:0">IncidentIQ</h1>
+            <p style="color:#93c5fd;font-size:12px;margin:4px 0 0">Incident Reporting & Safety Analytics</p>
+          </div>
+          <div style="border:1px solid #e2e8f0;border-top:none;padding:24px;border-radius:0 0 8px 8px">
+            <p style="color:#0d9488;font-weight:700;font-size:14px;margin:0 0 16px">👤 Reviewer Assigned</p>
+            <p style="font-size:14px;margin:0 0 16px">Hi ${c.employeeName?.split(" ")[0]},</p>
+            <p style="font-size:14px;margin:0 0 16px">Your incident report <strong>${c.id}</strong> has been assigned to <strong>${c.reviewer}</strong> for review.</p>
+            <table style="width:100%;font-size:14px;border-collapse:collapse">
+              <tr><td style="color:#64748b;padding:6px 0;width:140px">Case Number</td><td style="font-weight:600">${c.id}</td></tr>
+              <tr><td style="color:#64748b;padding:6px 0">Incident Type</td><td>${c.injuryType}</td></tr>
+              <tr><td style="color:#64748b;padding:6px 0">Submitted</td><td>${new Date(c.submittedAt).toLocaleDateString()}</td></tr>
+              <tr><td style="color:#64748b;padding:6px 0">Assigned to</td><td>${c.reviewer}</td></tr>
+            </table>
+            <p style="font-size:13px;color:#475569;margin:16px 0 0">No action is needed from you at this time. You will receive another notification when your report has been reviewed.</p>
+            <p style="font-size:11px;color:#94a3b8;margin:20px 0 0;padding-top:16px;border-top:1px solid #f1f5f9">${facility} · Automated notification from IncidentIQ</p>
+          </div>
+        </div>`,
+    };
+  }
+
+  if (type === "case_reviewed") {
+    return {
+      ...base,
+      to: process.env.STAFF_EMAIL,
+      subject: `[IncidentIQ] Your report has been reviewed — ${c.id}`,
+      html: `
+        <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;color:#1e293b">
+          <div style="background:#0f2d52;padding:20px 24px;border-radius:8px 8px 0 0">
+            <h1 style="color:white;font-size:18px;margin:0">IncidentIQ</h1>
+            <p style="color:#93c5fd;font-size:12px;margin:4px 0 0">Incident Reporting & Safety Analytics</p>
+          </div>
+          <div style="border:1px solid #e2e8f0;border-top:none;padding:24px;border-radius:0 0 8px 8px">
+            <p style="color:#0d9488;font-weight:700;font-size:14px;margin:0 0 16px">✅ Report Reviewed</p>
+            <p style="font-size:14px;margin:0 0 16px">Hi ${c.employeeName?.split(" ")[0]},</p>
+            <p style="font-size:14px;margin:0 0 16px">Your incident report <strong>${c.id}</strong> has been reviewed${c.reviewer ? ` by <strong>${c.reviewer}</strong>` : ""}.</p>
+            <table style="width:100%;font-size:14px;border-collapse:collapse">
+              <tr><td style="color:#64748b;padding:6px 0;width:140px">Case Number</td><td style="font-weight:600">${c.id}</td></tr>
+              <tr><td style="color:#64748b;padding:6px 0">Incident Type</td><td>${c.injuryType}</td></tr>
+              <tr><td style="color:#64748b;padding:6px 0">Status</td><td style="color:#0d9488;font-weight:600">Reviewed</td></tr>
+            </table>
+            <p style="font-size:13px;color:#475569;margin:16px 0 0">No further action is needed from you. If you have questions, please contact your administrator.</p>
+            <p style="font-size:11px;color:#94a3b8;margin:20px 0 0;padding-top:16px;border-top:1px solid #f1f5f9">${facility} · Automated notification from IncidentIQ</p>
+          </div>
+        </div>`,
+    };
+  }
+
+  return null;
+}
 
 // ─── POST /api/chat ────────────────────────────────────────────────────────
 // AI Safety Assistant: answers admin questions using live case data
@@ -110,6 +211,30 @@ Keep it warm, clear, and action-oriented. No headers or bullet points — flowin
   } catch (err) {
     console.error("Claude API error:", err.message);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── POST /api/notify ──────────────────────────────────────────────────────
+// Sends email notifications via Gmail (Nodemailer)
+// type: "new_case" | "reviewer_assigned" | "case_reviewed"
+app.post("/api/notify", async (req, res) => {
+  const { type, caseData } = req.body;
+
+  if (!process.env.GMAIL_USER || process.env.GMAIL_USER === "your-gmail@gmail.com") {
+    console.log(`[notify] Gmail not configured — skipping email (type: ${type})`);
+    return res.json({ sent: false, reason: "Gmail not configured" });
+  }
+
+  const mail = emailTemplates(type, caseData);
+  if (!mail) return res.status(400).json({ error: "Unknown notification type" });
+
+  try {
+    await transporter.sendMail(mail);
+    console.log(`[notify] Email sent: ${type} for ${caseData.id} → ${mail.to}`);
+    res.json({ sent: true });
+  } catch (err) {
+    console.error(`[notify] Email error:`, err.message);
+    res.status(500).json({ sent: false, error: err.message });
   }
 });
 

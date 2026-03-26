@@ -36,6 +36,14 @@ export function AppProvider({ children }) {
       auditTrail: [{ action: "Case created", by: user?.name || "Unknown", at: now }],
     };
     setCases((prev) => [newCase, ...prev]);
+
+    // Fire-and-forget email to admin
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "new_case", caseData: newCase }),
+    }).catch(() => {});
+
     return newCase;
   }
 

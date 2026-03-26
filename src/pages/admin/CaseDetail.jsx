@@ -47,10 +47,22 @@ export default function CaseDetail() {
     setReviewSaving(false);
     setReviewSaved(true);
     setTimeout(() => setReviewSaved(false), 3000);
+    // Email notification to employee
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "reviewer_assigned", caseData: { ...c, reviewer: reviewerVal } }),
+    }).catch(() => {});
   }
 
   function handleMarkReviewed() {
     updateCase(c.id, { reviewStatus: "Reviewed" }, "Status updated to Reviewed");
+    // Email notification to employee
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "case_reviewed", caseData: c }),
+    }).catch(() => {});
   }
 
   function handleCloseCase() {
