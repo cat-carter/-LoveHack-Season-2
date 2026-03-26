@@ -64,13 +64,21 @@ export default function CaseDetail() {
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div>
-            <Link to="/admin/cases" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 mb-3 transition-colors">← All Cases</Link>
+            <Link to="/admin/cases" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 mb-3 transition-colors print:hidden">← All Cases</Link>
             <h1 className="text-2xl font-semibold text-slate-800">{c.id}</h1>
             <p className="text-sm text-slate-500 mt-1">Submitted by {c.submittedBy} · {submittedAt}</p>
           </div>
-          <div className="flex gap-2">
-            <StatusBadge status={c.caseStatus} />
-            <StatusBadge status={c.reviewStatus} />
+          <div className="flex items-start gap-3">
+            <button
+              onClick={() => window.print()}
+              className="print:hidden flex items-center gap-1.5 text-sm font-medium text-slate-500 border border-slate-200 rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+            >
+              🖨️ Print / PDF
+            </button>
+            <div className="flex gap-2">
+              <StatusBadge status={c.caseStatus} />
+              <StatusBadge status={c.reviewStatus} />
+            </div>
           </div>
         </div>
 

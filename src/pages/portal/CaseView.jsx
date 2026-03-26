@@ -107,10 +107,27 @@ export default function CaseView() {
           ))}
         </div>
 
-        <div className="mt-6 bg-blue-50 border border-blue-100 rounded-xl p-4">
-          <p className="text-xs text-blue-700">
-            Your report is being reviewed. You will be notified if additional information is needed. Contact your administrator with any questions.
-          </p>
+        {/* Actions */}
+        <div className="mt-6 flex flex-col gap-3">
+          {c.reviewStatus === "Pending" && (
+            <Link
+              to={`/portal/cases/${c.id}/edit`}
+              className="flex items-center justify-center gap-2 w-full py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+            >
+              ✏️ Edit Report
+            </Link>
+          )}
+          <button
+            onClick={() => window.print()}
+            className="flex items-center justify-center gap-2 w-full py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors print:hidden"
+          >
+            🖨️ Print / Save as PDF
+          </button>
+          <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+            <p className="text-xs text-blue-700">
+              Your report is being reviewed. You will be notified if additional information is needed. Contact your administrator with any questions.
+            </p>
+          </div>
         </div>
       </div>
     </div>

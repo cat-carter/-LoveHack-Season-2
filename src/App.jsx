@@ -10,6 +10,7 @@ import StaffPortal from "./pages/portal/StaffPortal";
 import IncidentForm from "./pages/portal/IncidentForm";
 import CaseView from "./pages/portal/CaseView";
 import WorkersCompForm from "./pages/portal/WorkersCompForm";
+import EditReport from "./pages/portal/EditReport";
 import UserProfile from "./pages/UserProfile";
 
 function ProtectedRoute({ children, requiredRole }) {
@@ -38,6 +39,7 @@ function AppRoutes() {
         <Route path="/portal" element={<ProtectedRoute requiredRole="staff"><StaffPortal /></ProtectedRoute>} />
         <Route path="/portal/report/new" element={<ProtectedRoute requiredRole="staff"><IncidentForm /></ProtectedRoute>} />
         <Route path="/portal/cases/:id" element={<ProtectedRoute requiredRole="staff"><CaseView /></ProtectedRoute>} />
+        <Route path="/portal/cases/:id/edit" element={<ProtectedRoute requiredRole="staff"><EditReport /></ProtectedRoute>} />
         <Route path="/portal/workers-comp/:caseId" element={<ProtectedRoute requiredRole="staff"><WorkersCompForm /></ProtectedRoute>} />
         <Route path="/portal/profile" element={<ProtectedRoute requiredRole="staff"><UserProfile /></ProtectedRoute>} />
         <Route path="/admin/workers-comp/:caseId" element={<ProtectedRoute requiredRole="admin"><WorkersCompForm /></ProtectedRoute>} />
