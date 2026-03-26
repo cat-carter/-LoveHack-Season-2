@@ -64,7 +64,7 @@ export default function AISafetyAssistant() {
 
       {/* Panel */}
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 w-[380px] bg-white rounded-2xl shadow-xl border border-slate-200 flex flex-col overflow-hidden"
+        <div className="fixed bottom-24 right-4 left-4 sm:left-auto sm:right-6 z-50 sm:w-[380px] bg-white rounded-2xl shadow-xl border border-slate-200 flex flex-col overflow-hidden"
           style={{ maxHeight: "70vh" }}>
 
           {/* Header */}

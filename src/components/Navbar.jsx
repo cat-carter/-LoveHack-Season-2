@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
+import Logo from "./Logo";
 
 export default function Navbar() {
   const { user, logout } = useApp();
@@ -14,13 +15,9 @@ export default function Navbar() {
 
   return (
     <nav style={{ background: "#0f2d52" }} className="px-6 py-3 flex items-center justify-between sticky top-0 z-50 shadow-md">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1">
-          <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm">
-            <span style={{ color: "#0f2d52" }} className="text-sm font-black tracking-tight">IQ</span>
-          </div>
-          <span className="text-white font-bold text-lg tracking-tight ml-1">IncidentIQ</span>
-        </div>
+      <div className="flex items-center gap-2.5">
+        <Logo size={28} shieldColor="white" signalColor="#0f2d52" />
+        <span className="text-white font-bold text-lg tracking-tight">IncidentIQ</span>
       </div>
 
       {user && (

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AppProvider, useApp } from "./context/AppContext";
 import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
@@ -20,9 +20,10 @@ function ProtectedRoute({ children, requiredRole }) {
 }
 
 function AppRoutes() {
+  const { pathname } = useLocation();
   return (
     <>
-      <Navbar />
+      {pathname !== "/" && <Navbar />}
       <Routes>
         <Route path="/" element={<Login />} />
 

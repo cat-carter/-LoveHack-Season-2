@@ -32,7 +32,7 @@ function KpiCard({ label, value, sub, trend, accentColor = NAVY }) {
   const trendUp = trend > 0;
   return (
     <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm flex flex-col gap-2 hover:shadow-md transition-shadow">
-      <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">{label}</span>
+      <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest">{label}</span>
       <div className="flex items-end gap-3">
         <span className="text-4xl font-black text-slate-800">{value}</span>
         {trend !== undefined && (
@@ -41,19 +41,21 @@ function KpiCard({ label, value, sub, trend, accentColor = NAVY }) {
           </span>
         )}
       </div>
-      {sub && <p className="text-xs text-slate-400">{sub}</p>}
+      {sub && <p className="text-xs text-slate-500">{sub}</p>}
       <div className="h-0.5 w-12 rounded-full mt-1" style={{ background: accentColor }} />
     </div>
   );
 }
 
-// ── Custom donut label ───────────────────────────────────────────────────────
-function DonutLabel({ cx, cy, total }) {
+// ── Donut center label (absolute overlay — always truly centered) ─────────────
+function DonutCenter({ total }) {
   return (
-    <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
-      <tspan x={cx} dy="-6" fontSize="28" fontWeight="800" fill="#0f172a">{total}</tspan>
-      <tspan x={cx} dy="22" fontSize="11" fill="#94a3b8">total</tspan>
-    </text>
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div className="text-center">
+        <p className="text-3xl font-black text-slate-800 leading-none">{total}</p>
+        <p className="text-xs text-slate-500 mt-1">total</p>
+      </div>
+    </div>
   );
 }
 
@@ -79,7 +81,7 @@ export default function AdminDashboard() {
         <div className="mb-8 flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-bold text-slate-800">Safety Dashboard</h1>
-            <p className="text-sm text-slate-400 mt-1">Sunrise Nursing & Rehabilitation · March 2025</p>
+            <p className="text-sm text-slate-500 mt-1">Sunrise Nursing & Rehabilitation · March 2025</p>
           </div>
           <Link to="/admin/cases" className="text-xs font-semibold px-4 py-2 rounded-lg border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-sm">
             View all cases →
@@ -105,7 +107,7 @@ export default function AdminDashboard() {
           {/* Area chart */}
           <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
             <div className="mb-5">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Incident trend</p>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">Incident trend</p>
               <h3 className="text-base font-bold text-slate-800">
                 {momPct > 0 ? `↑ Up ${momPct}% from last month — monitor closely` : momPct < 0 ? `↓ Down ${Math.abs(momPct)}% from last month` : "Stable month-over-month"}
               </h3>
@@ -130,24 +132,26 @@ export default function AdminDashboard() {
           {/* Donut chart */}
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
             <div className="mb-4">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">By injury type</p>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">By injury type</p>
               <h3 className="text-base font-bold text-slate-800">Musculoskeletal leads at 35%</h3>
             </div>
-            <ResponsiveContainer width="100%" height={180}>
-              <PieChart>
-                <Pie
-                  data={injuryTypeData}
-                  cx="50%" cy="50%"
-                  innerRadius={55} outerRadius={80}
-                  paddingAngle={3} dataKey="value"
-                  strokeWidth={0}
-                >
-                  {injuryTypeData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                </Pie>
-                <DonutLabel cx={160} cy={90} total={total} />
-                <Tooltip content={<ChartTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="relative">
+              <ResponsiveContainer width="100%" height={180}>
+                <PieChart>
+                  <Pie
+                    data={injuryTypeData}
+                    cx="50%" cy="50%"
+                    innerRadius={55} outerRadius={80}
+                    paddingAngle={3} dataKey="value"
+                    strokeWidth={0}
+                  >
+                    {injuryTypeData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                  </Pie>
+                  <Tooltip content={<ChartTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+              <DonutCenter total={total} />
+            </div>
             <div className="space-y-1.5 mt-2">
               {injuryTypeData.map((d, i) => (
                 <div key={d.name} className="flex items-center gap-2">
@@ -167,7 +171,7 @@ export default function AdminDashboard() {
           {/* Shift bar */}
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
             <div className="mb-4">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">By shift</p>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">By shift</p>
               <h3 className="text-base font-bold text-slate-800">Day shift accounts for 44%</h3>
             </div>
             <ResponsiveContainer width="100%" height={160}>
@@ -185,7 +189,7 @@ export default function AdminDashboard() {
           {/* Trend alerts */}
           <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
             <div className="mb-4">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">AI-detected trends</p>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">AI-detected trends</p>
               <h3 className="text-base font-bold text-slate-800">3 items require your attention</h3>
             </div>
             <div className="space-y-3">
@@ -225,7 +229,7 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm">
           <div className="flex items-center justify-between px-6 py-4 border-b border-slate-50">
             <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-0.5">Recent cases</p>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-0.5">Recent cases</p>
               <h3 className="text-base font-bold text-slate-800">Latest incident reports</h3>
             </div>
             <Link to="/admin/cases" className="text-xs font-semibold text-blue-600 hover:underline">View all →</Link>
