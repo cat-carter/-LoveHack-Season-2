@@ -124,6 +124,29 @@ export default function CaseDetail() {
           </Link>
         </Section>
 
+        {/* Workers Comp */}
+        <Section title="Workers' Compensation Form">
+          {c.workersCompStatus === "Completed" ? (
+            <div className="flex items-center gap-2 text-sm text-teal-700">
+              <span>✓</span><span>Workers' comp form submitted.</span>
+            </div>
+          ) : (
+            <>
+              <p className="text-sm text-slate-500 mb-3">
+                {c.workersCompStatus === "Pending"
+                  ? "Workers' comp form is pending completion."
+                  : "If medical attention was required, a workers' compensation form must be completed."}
+              </p>
+              <Link
+                to={`/admin/workers-comp/${c.id}`}
+                className="inline-block bg-teal-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors"
+              >
+                {c.workersCompStatus === "Pending" ? "Complete Workers' Comp Form →" : "Start Workers' Comp Form →"}
+              </Link>
+            </>
+          )}
+        </Section>
+
         {/* Reviewer */}
         <Section title="Review & Assignment">
           <Field label="Assigned Reviewer" value={c.reviewer || "Unassigned"} />

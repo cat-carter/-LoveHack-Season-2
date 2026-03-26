@@ -9,6 +9,7 @@ import OSHA300 from "./pages/admin/OSHA300";
 import StaffPortal from "./pages/portal/StaffPortal";
 import IncidentForm from "./pages/portal/IncidentForm";
 import CaseView from "./pages/portal/CaseView";
+import WorkersCompForm from "./pages/portal/WorkersCompForm";
 
 function ProtectedRoute({ children, requiredRole }) {
   const { user } = useApp();
@@ -34,6 +35,8 @@ function AppRoutes() {
         <Route path="/portal" element={<ProtectedRoute requiredRole="staff"><StaffPortal /></ProtectedRoute>} />
         <Route path="/portal/report/new" element={<ProtectedRoute requiredRole="staff"><IncidentForm /></ProtectedRoute>} />
         <Route path="/portal/cases/:id" element={<ProtectedRoute requiredRole="staff"><CaseView /></ProtectedRoute>} />
+        <Route path="/portal/workers-comp/:caseId" element={<ProtectedRoute requiredRole="staff"><WorkersCompForm /></ProtectedRoute>} />
+        <Route path="/admin/workers-comp/:caseId" element={<ProtectedRoute requiredRole="admin"><WorkersCompForm /></ProtectedRoute>} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
