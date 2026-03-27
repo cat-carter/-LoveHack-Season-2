@@ -11,6 +11,8 @@ import IncidentForm from "./pages/portal/IncidentForm";
 import CaseView from "./pages/portal/CaseView";
 import WorkersCompForm from "./pages/portal/WorkersCompForm";
 import EditReport from "./pages/portal/EditReport";
+import NearMissForm from "./pages/portal/NearMissForm";
+import MyReports from "./pages/portal/MyReports";
 import UserProfile from "./pages/UserProfile";
 
 function ProtectedRoute({ children, requiredRole }) {
@@ -40,6 +42,8 @@ function AppRoutes() {
         <Route path="/portal/report/new" element={<ProtectedRoute requiredRole="staff"><IncidentForm /></ProtectedRoute>} />
         <Route path="/portal/cases/:id" element={<ProtectedRoute requiredRole="staff"><CaseView /></ProtectedRoute>} />
         <Route path="/portal/cases/:id/edit" element={<ProtectedRoute requiredRole="staff"><EditReport /></ProtectedRoute>} />
+        <Route path="/portal/near-miss/new" element={<ProtectedRoute requiredRole="staff"><NearMissForm /></ProtectedRoute>} />
+        <Route path="/portal/reports" element={<ProtectedRoute requiredRole="staff"><MyReports /></ProtectedRoute>} />
         <Route path="/portal/workers-comp/:caseId" element={<ProtectedRoute requiredRole="staff"><WorkersCompForm /></ProtectedRoute>} />
         <Route path="/portal/profile" element={<ProtectedRoute requiredRole="staff"><UserProfile /></ProtectedRoute>} />
         <Route path="/admin/workers-comp/:caseId" element={<ProtectedRoute requiredRole="admin"><WorkersCompForm /></ProtectedRoute>} />

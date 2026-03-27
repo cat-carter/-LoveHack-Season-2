@@ -6,8 +6,9 @@ export default function CaseView() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const justSubmitted = searchParams.get("submitted") === "true";
-  const { cases } = useApp();
+  const { cases, dismissNote } = useApp();
   const c = cases.find((x) => x.id === id);
+  const pendingNotes = (c?.notes || []).filter((n) => n.requiresAction && !n.dismissed);
 
   if (!c) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -25,6 +26,24 @@ export default function CaseView() {
         <Link to="/portal" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 mb-5 transition-colors">
           ← My Reports
         </Link>
+
+        {/* Action-required banner from admin */}
+        {pendingNotes.map((n) => (
+          <div key={n.id} className="bg-amber-50 border border-amber-300 rounded-2xl p-4 mb-4 flex items-start gap-3">
+            <span className="text-amber-500 text-xl shrink-0">💬</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-amber-800">Action requested by your administrator</p>
+              <p className="text-sm text-amber-700 mt-1">{n.text}</p>
+              <p className="text-xs text-amber-500 mt-1.5">{n.by} · {new Date(n.at).toLocaleString()}</p>
+            </div>
+            <button
+              onClick={() => dismissNote(c.id, n.id)}
+              className="text-xs font-semibold text-amber-600 hover:text-amber-800 border border-amber-300 rounded-lg px-3 py-1.5 shrink-0 transition-colors"
+            >
+              Mark resolved
+            </button>
+          </div>
+        ))}
 
         {/* Submission confirmation banner */}
         {justSubmitted && (
@@ -106,6 +125,26 @@ export default function CaseView() {
             </div>
           ))}
         </div>
+
+        {/* Activity / Audit Trail */}
+        {c.auditTrail && c.auditTrail.length > 0 && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 mt-6">
+            <h2 className="text-sm font-semibold text-slate-700 mb-4">Activity</h2>
+            <div className="space-y-0">
+              {[...c.auditTrail].reverse().map((entry, i) => (
+                <div key={i} className="flex gap-3 py-2.5 border-b border-slate-50 last:border-0">
+                  <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-2 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-slate-700">{entry.action}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {entry.by} · {new Date(entry.at).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="mt-6 flex flex-col gap-3">

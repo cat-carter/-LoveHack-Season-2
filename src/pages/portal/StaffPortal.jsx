@@ -9,6 +9,10 @@ export default function StaffPortal() {
   const myCases = cases.filter((c) => c.employeeName === user?.name || c.submittedBy === user?.name);
   const openCount = myCases.filter((c) => c.caseStatus === "Open").length;
 
+  const recent = [...myCases]
+    .sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))
+    .slice(0, 4);
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-2xl mx-auto px-4 py-8 fade-in">
@@ -22,36 +26,53 @@ export default function StaffPortal() {
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-8">
-          {[
-            { value: myCases.length, label: "Total reports" },
-            { value: openCount, label: "Open cases", color: "#f59e0b" },
-            { value: drafts.length, label: "Saved drafts", color: "#64748b" },
-          ].map(({ value, label, color }) => (
-            <div key={label} className="bg-white rounded-xl border border-slate-100 shadow-sm px-4 py-3 text-center">
-              <p className="text-2xl font-black" style={{ color: color || NAVY }}>{value}</p>
-              <p className="text-xs text-slate-400 mt-0.5">{label}</p>
-            </div>
-          ))}
+          <Link
+            to="/portal/reports"
+            className="bg-white rounded-xl border border-slate-100 shadow-sm px-4 py-3 text-center hover:bg-slate-50 hover:border-slate-200 transition-colors group"
+          >
+            <p className="text-2xl font-black" style={{ color: NAVY }}>{myCases.length}</p>
+            <p className="text-xs text-slate-400 mt-0.5 group-hover:text-slate-600 transition-colors">Total reports ↗</p>
+          </Link>
+          <Link
+            to="/portal/reports?filter=open"
+            className="bg-white rounded-xl border border-slate-100 shadow-sm px-4 py-3 text-center hover:bg-amber-50 hover:border-amber-200 transition-colors group"
+          >
+            <p className="text-2xl font-black text-amber-500">{openCount}</p>
+            <p className="text-xs text-slate-400 mt-0.5 group-hover:text-amber-600 transition-colors">Open cases ↗</p>
+          </Link>
+          <Link
+            to="/portal/reports?filter=drafts"
+            className="bg-white rounded-xl border border-slate-100 shadow-sm px-4 py-3 text-center hover:bg-slate-100 hover:border-slate-300 transition-colors group"
+          >
+            <p className="text-2xl font-black text-slate-500">{drafts.length}</p>
+            <p className="text-xs text-slate-400 mt-0.5 group-hover:text-slate-600 transition-colors">Saved drafts ↗</p>
+          </Link>
         </div>
 
         {/* Quick actions */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
           <Link
             to="/portal/report/new"
             className="text-white rounded-2xl p-5 flex flex-col gap-2 transition-all hover:opacity-90 shadow-sm"
             style={{ background: NAVY }}
           >
             <span className="text-2xl">📋</span>
-            <span className="font-bold text-sm">New Incident Report</span>
-            <span className="text-xs opacity-70">Report a workplace injury or near miss</span>
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-sm">New Incident Report</span>
+              <span className="text-lg font-bold opacity-80">+</span>
+            </div>
+            <span className="text-xs opacity-70">Report a workplace injury or illness</span>
           </Link>
           <Link
-            to="/portal/report/new?type=near-miss"
-            className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-2xl p-5 flex flex-col gap-2 transition-colors shadow-sm"
+            to="/portal/near-miss/new"
+            className="bg-white border border-slate-200 text-slate-700 rounded-2xl p-5 flex flex-col gap-2 transition-colors shadow-sm hover:bg-amber-50 hover:border-amber-300 hover:text-amber-800 group"
           >
             <span className="text-2xl">⚠️</span>
-            <span className="font-bold text-sm">Near Miss Report</span>
-            <span className="text-xs text-slate-400">Report a close call — no injury required</span>
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-sm">Near Miss Report</span>
+              <span className="text-lg font-bold opacity-60 group-hover:opacity-100">+</span>
+            </div>
+            <span className="text-xs text-slate-400 group-hover:text-amber-600 transition-colors">Report a close call — good catch!</span>
           </Link>
         </div>
 
@@ -67,7 +88,7 @@ export default function StaffPortal() {
         {/* Drafts */}
         {drafts.length > 0 && (
           <div className="mb-6">
-            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Saved Drafts</h2>
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">Saved Drafts</h2>
             <div className="space-y-2">
               {drafts.map((d) => (
                 <div key={d.draftId} className="bg-white border border-amber-200 rounded-xl p-4 flex items-center justify-between">
@@ -82,10 +103,17 @@ export default function StaffPortal() {
           </div>
         )}
 
-        {/* My reports */}
+        {/* Recent Activity */}
         <div>
-          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">My Submitted Reports</h2>
-          {myCases.length === 0 ? (
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400">Recent Activity</h2>
+            {myCases.length > 4 && (
+              <Link to="/portal/reports" className="text-xs font-semibold hover:underline" style={{ color: NAVY }}>
+                View all {myCases.length} reports →
+              </Link>
+            )}
+          </div>
+          {recent.length === 0 ? (
             <div className="bg-white border border-slate-100 rounded-2xl p-10 text-center shadow-sm">
               <p className="text-slate-400 text-sm">No reports submitted yet.</p>
               <Link
@@ -98,7 +126,7 @@ export default function StaffPortal() {
             </div>
           ) : (
             <div className="space-y-3">
-              {myCases.map((c) => (
+              {recent.map((c) => (
                 <Link
                   key={c.id}
                   to={`/portal/cases/${c.id}`}
@@ -117,6 +145,14 @@ export default function StaffPortal() {
                   </div>
                 </Link>
               ))}
+              {myCases.length > 4 && (
+                <Link
+                  to="/portal/reports"
+                  className="block text-center py-3 text-xs font-semibold rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors"
+                >
+                  View all {myCases.length} reports →
+                </Link>
+              )}
             </div>
           )}
         </div>

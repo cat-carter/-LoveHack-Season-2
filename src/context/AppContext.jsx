@@ -47,6 +47,39 @@ export function AppProvider({ children }) {
     return newCase;
   }
 
+  function addNote(caseId, text, requiresAction) {
+    setCases((prev) =>
+      prev.map((c) => {
+        if (c.id !== caseId) return c;
+        const note = {
+          id: Date.now(),
+          text,
+          by: user?.name || "Admin",
+          at: new Date().toISOString(),
+          requiresAction,
+        };
+        return {
+          ...c,
+          notes: [...(c.notes || []), note],
+        };
+      })
+    );
+  }
+
+  function dismissNote(caseId, noteId) {
+    setCases((prev) =>
+      prev.map((c) => {
+        if (c.id !== caseId) return c;
+        return {
+          ...c,
+          notes: (c.notes || []).map((n) =>
+            n.id === noteId ? { ...n, dismissed: true } : n
+          ),
+        };
+      })
+    );
+  }
+
   function updateCase(caseId, updates, actionLabel) {
     setCases((prev) =>
       prev.map((c) => {
@@ -76,7 +109,7 @@ export function AppProvider({ children }) {
   }
 
   return (
-    <AppContext.Provider value={{ user, login, logout, cases, submitCase, updateCase, drafts, saveDraft, reviewers: mockReviewers }}>
+    <AppContext.Provider value={{ user, login, logout, cases, submitCase, updateCase, addNote, dismissNote, drafts, saveDraft, reviewers: mockReviewers }}>
       {children}
     </AppContext.Provider>
   );

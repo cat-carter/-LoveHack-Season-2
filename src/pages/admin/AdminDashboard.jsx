@@ -12,6 +12,49 @@ import { Link } from "react-router-dom";
 const NAVY = "#0f2d52";
 const COLORS = ["#0f2d52", "#1e6091", "#0d9488", "#f59e0b", "#94a3b8"];
 
+// ── Global activity feed ─────────────────────────────────────────────────────
+function ActivityFeed({ cases }) {
+  const allEntries = cases.flatMap((c) =>
+    (c.auditTrail || []).map((entry) => ({ ...entry, caseId: c.id }))
+  );
+  const sorted = allEntries
+    .sort((a, b) => new Date(b.at) - new Date(a.at))
+    .slice(0, 10);
+
+  return (
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col">
+      <div className="px-5 py-4 border-b border-slate-50">
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-0.5">Activity</p>
+        <h3 className="text-base font-bold text-slate-800">Recent actions</h3>
+      </div>
+      <div className="flex-1 overflow-y-auto divide-y divide-slate-50">
+        {sorted.length === 0 ? (
+          <p className="text-sm text-slate-400 italic px-5 py-6">No activity recorded yet.</p>
+        ) : (
+          sorted.map((entry, i) => (
+            <div key={i} className="flex gap-3 px-5 py-3 hover:bg-slate-50 transition-colors">
+              <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-2 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <Link
+                  to={`/admin/cases/${entry.caseId}`}
+                  className="text-xs font-semibold hover:underline shrink-0"
+                  style={{ color: NAVY }}
+                >
+                  {entry.caseId}
+                </Link>
+                <p className="text-xs text-slate-600 mt-0.5 leading-snug">{entry.action}</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  {entry.by} · {new Date(entry.at).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Custom tooltip shared across charts ────────────────────────────────────
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
@@ -75,10 +118,10 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-6 py-8 fade-in">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 fade-in">
 
         {/* Header */}
-        <div className="mb-8 flex items-start justify-between">
+        <div className="mb-8 flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-slate-800">Safety Dashboard</h1>
             <p className="text-sm text-slate-500 mt-1">Sunrise Nursing & Rehabilitation · March 2025</p>
@@ -225,40 +268,47 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Recent cases */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-50">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-0.5">Recent cases</p>
-              <h3 className="text-base font-bold text-slate-800">Latest incident reports</h3>
+        {/* Bottom row: Recent cases + Activity feed */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          {/* Recent cases */}
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-50">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-0.5">Recent cases</p>
+                <h3 className="text-base font-bold text-slate-800">Latest incident reports</h3>
+              </div>
+              <Link to="/admin/cases" className="text-xs font-semibold text-blue-600 hover:underline">View all →</Link>
             </div>
-            <Link to="/admin/cases" className="text-xs font-semibold text-blue-600 hover:underline">View all →</Link>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-50 bg-slate-50">
-                  {["Case #", "Employee", "Injury Type", "Date", "Review", "Case"].map((h) => (
-                    <th key={h} className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {recent.map((c) => (
-                  <tr key={c.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-3.5">
-                      <Link to={`/admin/cases/${c.id}`} className="font-semibold hover:underline" style={{ color: NAVY }}>{c.id}</Link>
-                    </td>
-                    <td className="px-6 py-3.5 font-medium text-slate-700">{c.employeeName}</td>
-                    <td className="px-6 py-3.5 text-slate-500">{c.injuryType}</td>
-                    <td className="px-6 py-3.5 text-slate-400 tabular-nums">{c.incidentDate}</td>
-                    <td className="px-6 py-3.5"><StatusBadge status={c.reviewStatus} /></td>
-                    <td className="px-6 py-3.5"><StatusBadge status={c.caseStatus} /></td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-50 bg-slate-50">
+                    {["Case #", "Employee", "Injury Type", "Date", "Review", "Case"].map((h) => (
+                      <th key={h} className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">{h}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {recent.map((c) => (
+                    <tr key={c.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                      <td className="px-6 py-3.5">
+                        <Link to={`/admin/cases/${c.id}`} className="font-semibold hover:underline" style={{ color: NAVY }}>{c.id}</Link>
+                      </td>
+                      <td className="px-6 py-3.5 font-medium text-slate-700">{c.employeeName}</td>
+                      <td className="px-6 py-3.5 text-slate-500">{c.injuryType}</td>
+                      <td className="px-6 py-3.5 text-slate-400 tabular-nums">{c.incidentDate}</td>
+                      <td className="px-6 py-3.5"><StatusBadge status={c.reviewStatus} /></td>
+                      <td className="px-6 py-3.5"><StatusBadge status={c.caseStatus} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
+
+          {/* Global activity feed */}
+          <ActivityFeed cases={cases} />
         </div>
 
       </div>

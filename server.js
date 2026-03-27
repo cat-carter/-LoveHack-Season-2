@@ -230,7 +230,9 @@ Location: ${location || "not specified"}
 Shift: ${shift || "not specified"}
 Description written so far: "${description}"
 
-Review the description and identify 2–3 specific details that are missing or vague that would make this a more complete incident report. Focus on:
+Review the description and identify 2–3 specific details that are missing or vague. For each missing detail, write a short fill-in-the-blank sentence the employee can click to add to their report. Use [brackets] for the part they need to fill in.
+
+Focus on:
 - What the employee was doing immediately before the incident
 - Whether assistive equipment (lift, gait belt, call light) was available or used
 - Environmental factors (wet floor, lighting, clutter)
@@ -238,9 +240,15 @@ Review the description and identify 2–3 specific details that are missing or v
 - Witness presence
 
 Return ONLY a JSON object in this exact format — no explanation, no markdown:
-{"suggestions": ["short actionable question 1", "short actionable question 2", "short actionable question 3"]}
+{"suggestions": ["fill-in-the-blank sentence 1", "fill-in-the-blank sentence 2", "fill-in-the-blank sentence 3"]}
 
-Each suggestion must be a short question under 12 words. Only return questions for details that are genuinely missing from the description.`;
+Examples of good fill-in-the-blank sentences:
+- "A [mechanical lift / gait belt / no assistive device] was used during the transfer."
+- "The floor was [dry / wet / recently mopped] at the time of the incident."
+- "[A colleague / No witness] was present when the incident occurred."
+- "I was [repositioning / transferring / assisting with ambulation] the resident at the time."
+
+Keep each sentence under 20 words. Only suggest sentences for details genuinely missing from the description.`;
 
   try {
     const response = await client.messages.create({
@@ -249,7 +257,9 @@ Each suggestion must be a short question under 12 words. Only return questions f
       messages: [{ role: "user", content: prompt }],
     });
 
-    const text = response.content[0].text.trim();
+    let text = response.content[0].text.trim();
+    // Strip markdown code fences if Claude wrapped JSON in ```json ... ```
+    text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
     const parsed = JSON.parse(text);
     res.json(parsed);
   } catch (err) {

@@ -23,11 +23,14 @@ function Field({ label, value }) {
 
 export default function CaseDetail() {
   const { id } = useParams();
-  const { cases, updateCase, reviewers } = useApp();
+  const { cases, updateCase, addNote, reviewers } = useApp();
   const c = cases.find((x) => x.id === id);
   const [reviewerVal, setReviewerVal] = useState("");
   const [reviewSaving, setReviewSaving] = useState(false);
   const [reviewSaved, setReviewSaved] = useState(false);
+  const [noteText, setNoteText] = useState("");
+  const [noteRequiresAction, setNoteRequiresAction] = useState(false);
+  const [noteSaved, setNoteSaved] = useState(false);
 
   if (!c) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -69,9 +72,18 @@ export default function CaseDetail() {
     updateCase(c.id, { caseStatus: "Closed" }, "Case closed");
   }
 
+  function handleAddNote() {
+    if (!noteText.trim()) return;
+    addNote(c.id, noteText.trim(), noteRequiresAction);
+    setNoteText("");
+    setNoteRequiresAction(false);
+    setNoteSaved(true);
+    setTimeout(() => setNoteSaved(false), 2500);
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
 
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
@@ -111,7 +123,7 @@ export default function CaseDetail() {
 
         {/* Incident Report */}
         <Section title="Incident Report">
-          <div className="grid grid-cols-2 gap-x-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
             <Field label="Employee Name" value={c.employeeName} />
             <Field label="Manager Name" value={c.managerName} />
             <Field label="Position" value={c.position} />
@@ -134,7 +146,7 @@ export default function CaseDetail() {
           <div className="bg-teal-50 border border-teal-100 rounded-lg px-4 py-2 mb-4 text-xs text-teal-700">
             Fields auto-populated from incident report submission.
           </div>
-          <div className="grid grid-cols-2 gap-x-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
             <Field label="Case Number" value={c.id} />
             <Field label="Date of Injury" value={c.incidentDate} />
             <Field label="Time Employee Began Work" value={`${c.shift} shift`} />
@@ -253,6 +265,58 @@ export default function CaseDetail() {
           </div>
 
           {c.expectedReturn && <Field label="Expected Return Date" value={c.expectedReturn} />}
+        </Section>
+
+        {/* Admin Notes */}
+        <Section title="Notes to Employee">
+          {/* Existing notes */}
+          {(c.notes || []).length > 0 && (
+            <div className="space-y-2 mb-4">
+              {[...c.notes].reverse().map((n) => (
+                <div key={n.id} className={`rounded-xl p-3 text-sm border ${n.requiresAction && !n.dismissed ? "bg-amber-50 border-amber-200" : "bg-slate-50 border-slate-100"}`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-slate-700">{n.text}</p>
+                    {n.requiresAction && !n.dismissed && (
+                      <span className="text-[10px] font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full shrink-0">Action requested</span>
+                    )}
+                    {n.dismissed && (
+                      <span className="text-[10px] text-slate-400 shrink-0">Resolved</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">{n.by} · {new Date(n.at).toLocaleString()}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add new note */}
+          <div className="space-y-2">
+            <textarea
+              rows={3}
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder="Leave a note for the employee about this case…"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-400 bg-white resize-none"
+            />
+            <div className="flex items-center justify-between gap-3">
+              <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={noteRequiresAction}
+                  onChange={(e) => setNoteRequiresAction(e.target.checked)}
+                  className="rounded"
+                />
+                Request action from employee
+              </label>
+              <button
+                onClick={handleAddNote}
+                disabled={!noteText.trim()}
+                className="px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 disabled:opacity-40 transition-colors"
+              >
+                {noteSaved ? "✓ Sent" : "Send Note"}
+              </button>
+            </div>
+          </div>
         </Section>
 
         {/* Audit Trail */}

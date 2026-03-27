@@ -103,12 +103,35 @@ export default function EditReport() {
   function handleNext() { setStep((s) => Math.min(s + 1, STEPS.length - 1)); }
   function handleBack() { setStep((s) => Math.max(s - 1, 0)); }
 
+  const FIELD_LABELS = {
+    employeeName: "Employee name",
+    managerName: "Manager name",
+    shift: "Shift",
+    position: "Position",
+    incidentDate: "Incident date",
+    incidentTime: "Incident time",
+    incidentLocation: "Location",
+    injuryType: "Injury / incident type",
+    injuryDescription: "Incident description",
+    symptoms: "Medical symptoms",
+    medicalEvaluation: "Medical evaluation",
+    medicalDiagnosis: "Medical diagnosis",
+  };
+
   function handleSave() {
-    const updates = {
-      ...form,
-      medicalEvaluation: form.medicalEvaluation === "yes",
-    };
-    updateCase(id, updates, "Report edited by employee");
+    const changed = [];
+    for (const [field, label] of Object.entries(FIELD_LABELS)) {
+      const oldVal = field === "medicalEvaluation"
+        ? (c.medicalEvaluation ? "yes" : "no")
+        : String(c[field] || "").trim();
+      const newVal = String(form[field] || "").trim();
+      if (oldVal !== newVal) changed.push(label);
+    }
+    const actionLabel = changed.length > 0
+      ? `Report edited by employee — ${changed.join(", ")} updated`
+      : "Report edited by employee (no changes)";
+
+    updateCase(id, { ...form, medicalEvaluation: form.medicalEvaluation === "yes" }, actionLabel);
     navigate(`/portal/cases/${id}`);
   }
 
@@ -139,7 +162,7 @@ export default function EditReport() {
               <FormField label="Manager Name" required>
                 <input className={inputCls} value={form.managerName} onChange={(e) => update("managerName", e.target.value)} />
               </FormField>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <FormField label="Shift" required>
                   <select className={selectCls} value={form.shift} onChange={(e) => update("shift", e.target.value)}>
                     <option value="">Select shift</option>
@@ -152,7 +175,7 @@ export default function EditReport() {
                   <input className={inputCls} value={form.position} onChange={(e) => update("position", e.target.value)} />
                 </FormField>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <FormField label="Event Date" required>
                   <input type="date" className={inputCls} value={form.incidentDate} onChange={(e) => update("incidentDate", e.target.value)} />
                 </FormField>

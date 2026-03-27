@@ -18,7 +18,7 @@ export default function CaseList() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-6 py-8 fade-in">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 fade-in">
 
         {/* Header */}
         <div className="mb-8 flex items-start justify-between">

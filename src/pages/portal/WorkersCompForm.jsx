@@ -139,7 +139,7 @@ export default function WorkersCompForm() {
               <Field label="Employee Name" required>
                 <input className={inp} value={form.employeeName} onChange={(e) => set("employeeName", e.target.value)} />
               </Field>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Gender" required>
                   <select className={sel} value={form.gender} onChange={(e) => set("gender", e.target.value)}>
                     <option value="">Select</option>
@@ -150,7 +150,7 @@ export default function WorkersCompForm() {
                   <input type="date" className={inp} value={form.birthDate} onChange={(e) => set("birthDate", e.target.value)} />
                 </Field>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="SSN (last 4 digits)" hint="For verification only">
                   <input className={inp} maxLength={4} placeholder="XXXX" value={form.ssn} onChange={(e) => set("ssn", e.target.value)} />
                 </Field>
@@ -164,7 +164,7 @@ export default function WorkersCompForm() {
               <Field label="Home Address" required>
                 <input className={inp} value={form.homeAddress} onChange={(e) => set("homeAddress", e.target.value)} placeholder="Street, City, State, ZIP" />
               </Field>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Personal Phone">
                   <input className={inp} value={form.personalPhone} onChange={(e) => set("personalPhone", e.target.value)} />
                 </Field>
@@ -172,7 +172,7 @@ export default function WorkersCompForm() {
                   <input className={inp} value={form.workPhone} onChange={(e) => set("workPhone", e.target.value)} />
                 </Field>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Hire Date">
                   <input type="date" className={inp} value={form.hireDate} onChange={(e) => set("hireDate", e.target.value)} />
                 </Field>
@@ -189,7 +189,7 @@ export default function WorkersCompForm() {
               <div className="bg-teal-50 border border-teal-100 rounded-xl p-3 mb-5 text-xs text-teal-700">
                 Fields pre-filled from the linked incident report.
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Manager Name" required>
                   <input className={inp} value={form.managerName} onChange={(e) => set("managerName", e.target.value)} />
                 </Field>
@@ -197,7 +197,7 @@ export default function WorkersCompForm() {
                   <input className={inp} value={form.managerPhone} onChange={(e) => set("managerPhone", e.target.value)} />
                 </Field>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Date of Incident" required>
                   <input type="date" className={inp} value={form.incidentDate} onChange={(e) => set("incidentDate", e.target.value)} />
                 </Field>
@@ -272,7 +272,7 @@ export default function WorkersCompForm() {
                   <Field label="Physician Phone">
                     <input className={inp} value={form.physicianPhone} onChange={(e) => set("physicianPhone", e.target.value)} />
                   </Field>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <Field label="Time off from" hint="If requesting leave">
                       <input type="date" className={inp} value={form.timeOffStart} onChange={(e) => set("timeOffStart", e.target.value)} />
                     </Field>

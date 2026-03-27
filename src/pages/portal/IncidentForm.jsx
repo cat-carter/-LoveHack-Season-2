@@ -6,21 +6,31 @@ function FormCoach({ description, injuryType, location, shift, onApply }) {
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [used, setUsed] = useState(new Set());
+  const [error, setError] = useState(null);
 
   async function fetchSuggestions() {
     if (!description || description.trim().length < 10) return;
     setLoading(true);
     setSuggestions([]);
     setUsed(new Set());
+    setError(null);
     try {
       const res = await fetch("/api/coach", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ description, injuryType, location, shift }),
       });
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+      }
       const data = await res.json();
       setSuggestions(data.suggestions || []);
-    } catch {
+      if (!data.suggestions || data.suggestions.length === 0) {
+        setError("No suggestions — try adding more detail to your description.");
+      }
+    } catch (err) {
+      console.error("FormCoach error:", err);
+      setError("Couldn't reach the AI server. Make sure the API server is running.");
       setSuggestions([]);
     } finally {
       setLoading(false);
@@ -50,9 +60,13 @@ function FormCoach({ description, injuryType, location, shift, onApply }) {
         )}
       </button>
 
+      {error && (
+        <p className="mt-2 text-xs text-rose-500">{error}</p>
+      )}
+
       {suggestions.length > 0 && (
         <div className="mt-3 space-y-2">
-          <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">Consider adding:</p>
+          <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">Click to add — then fill in the blanks:</p>
           {suggestions.map((s, i) => (
             <button
               key={i}
@@ -65,7 +79,7 @@ function FormCoach({ description, injuryType, location, shift, onApply }) {
                   : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-teal-50 hover:border-teal-300 hover:text-teal-700"
                 }`}
             >
-              <span className="shrink-0 mt-0.5">{used.has(i) ? "✓" : "💬"}</span>
+              <span className="shrink-0 mt-0.5">{used.has(i) ? "✓" : "＋"}</span>
               {s}
             </button>
           ))}
@@ -170,7 +184,7 @@ export default function IncidentForm() {
               <FormField label="Manager Name" required>
                 <input className={inputCls} value={form.managerName} onChange={(e) => update("managerName", e.target.value)} />
               </FormField>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <FormField label="Shift" required>
                   <select className={selectCls} value={form.shift} onChange={(e) => update("shift", e.target.value)}>
                     <option value="">Select shift</option>
@@ -183,7 +197,7 @@ export default function IncidentForm() {
                   <input className={inputCls} value={form.position} onChange={(e) => update("position", e.target.value)} />
                 </FormField>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <FormField label="Event Date" required>
                   <input type="date" className={inputCls} value={form.incidentDate} onChange={(e) => update("incidentDate", e.target.value)} />
                 </FormField>
