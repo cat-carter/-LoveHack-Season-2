@@ -105,7 +105,7 @@ export default function NearMissForm() {
 
         {/* Header */}
         <div className="flex items-start gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-xl shrink-0">⚠️</div>
+          <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div>
           <div>
             <h1 className="text-xl font-semibold text-slate-800">Near Miss Report</h1>
             <p className="text-sm text-slate-500 mt-0.5">A "good catch" — no injury occurred, but something could have gone wrong.</p>

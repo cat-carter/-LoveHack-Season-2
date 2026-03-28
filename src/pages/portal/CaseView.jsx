@@ -1,6 +1,7 @@
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 import StatusBadge from "../../components/StatusBadge";
+import { Printer, Pencil } from "lucide-react";
 
 export default function CaseView() {
   const { id } = useParams();
@@ -153,14 +154,14 @@ export default function CaseView() {
               to={`/portal/cases/${c.id}/edit`}
               className="flex items-center justify-center gap-2 w-full py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
             >
-              ✏️ Edit Report
+              <Pencil size={14} aria-hidden="true" /> Edit Report
             </Link>
           )}
           <button
             onClick={() => window.print()}
             className="flex items-center justify-center gap-2 w-full py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors print:hidden"
           >
-            🖨️ Print / Save as PDF
+            <Printer size={14} aria-hidden="true" /> Print / Save as PDF
           </button>
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
             <p className="text-xs text-blue-700">

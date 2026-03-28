@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
+import { Printer, Sparkles, RefreshCw } from "lucide-react";
 
 const NAVY = "#0f2d52";
 
@@ -21,8 +22,8 @@ function NarrativeField({ label, questionNum, value, onChange, aiDrafted }) {
       <label className="block text-sm font-semibold text-slate-700 mb-1">
         {questionNum}. {label}
         {aiDrafted && (
-          <span className="ml-2 text-[10px] font-bold text-teal-600 bg-teal-50 border border-teal-200 rounded-full px-2 py-0.5 print:hidden">
-            ✨ AI drafted
+          <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-bold text-teal-600 bg-teal-50 border border-teal-200 rounded-full px-2 py-0.5 print:hidden">
+            <Sparkles size={9} aria-hidden="true" /> AI drafted
           </span>
         )}
       </label>
@@ -123,7 +124,7 @@ export default function OSHA301() {
                   Claude is drafting…
                 </>
               ) : (
-                <>✨ Generate AI Drafts</>
+                <><Sparkles size={14} aria-hidden="true" /> Generate AI Drafts</>
               )}
             </button>
           ) : (
@@ -132,14 +133,14 @@ export default function OSHA301() {
               disabled={generating}
               className="flex items-center gap-2 px-3 py-1.5 border border-teal-200 text-teal-700 text-xs font-medium rounded-lg hover:bg-teal-50 disabled:opacity-50 transition-colors"
             >
-              {generating ? "Regenerating…" : "↻ Regenerate"}
+              {generating ? "Regenerating…" : <><RefreshCw size={11} aria-hidden="true" /> Regenerate</>}
             </button>
           )}
           <button
             onClick={() => window.print()}
             className="flex items-center gap-1.5 px-4 py-2 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors"
           >
-            🖨 Print / Save PDF
+            <Printer size={14} aria-hidden="true" /> Print / Save PDF
           </button>
         </div>
       </div>
@@ -148,23 +149,30 @@ export default function OSHA301() {
       <div className="max-w-4xl mx-auto px-4 py-8 print:px-0 print:py-0 print:max-w-none">
         <div className="bg-white shadow-sm rounded-2xl print:shadow-none print:rounded-none overflow-hidden">
 
-          {/* Official header */}
-          <div className="px-8 pt-8 pb-4 border-b-2 border-slate-800 print:px-6">
-            <div className="flex items-start justify-between">
+          {/* Official header — navy band */}
+          <div className="px-8 pt-6 pb-5 print:px-6" style={{ background: "#0f2d52" }}>
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">U.S. Department of Labor · Occupational Safety and Health Administration</p>
-                <h1 className="text-xl font-black text-slate-900">Form 301</h1>
-                <h2 className="text-base font-bold text-slate-700">Injuries and Illnesses Incident Report</h2>
+                <p className="text-[10px] font-semibold text-blue-200 uppercase tracking-widest mb-1.5">
+                  U.S. Department of Labor · Occupational Safety and Health Administration
+                </p>
+                <h1 className="text-2xl font-black text-white leading-tight">Form 301</h1>
+                <h2 className="text-sm font-semibold text-blue-100 mt-0.5">Injuries and Illnesses Incident Report</h2>
               </div>
-              <div className="text-right">
-                <p className="text-[10px] text-slate-400">OMB No. 1218-0176</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">Case No. <strong className="text-slate-700">{c.id}</strong></p>
-                <p className="text-[10px] text-slate-400 mt-2 max-w-[200px] text-right leading-relaxed">
+              <div className="text-right shrink-0">
+                <p className="text-[10px] text-blue-300">OMB No. 1218-0176</p>
+                <p className="text-[10px] text-blue-300 mt-0.5">
+                  Case No. <strong className="text-white">{c.id}</strong>
+                </p>
+                <p className="text-[10px] text-blue-300 mt-2 max-w-[180px] text-right leading-relaxed">
                   Information about the employee and the case must be kept confidential.
                 </p>
               </div>
             </div>
-            <p className="text-xs text-slate-500 mt-3 leading-relaxed">
+          </div>
+          {/* Statutory notice */}
+          <div className="px-8 py-3 bg-slate-50 border-b-2 border-slate-800 print:px-6">
+            <p className="text-[11px] text-slate-600 leading-relaxed">
               This Injury and Illness Incident Report is one of the first forms you must fill out when a recordable work-related injury or illness has occurred. Together with the Log of Work-Related Injuries and Illnesses and the accompanying Summary, these forms help the employer and OSHA develop a picture of the extent and character of work-related incidents at a specific establishment.
             </p>
           </div>
@@ -173,7 +181,7 @@ export default function OSHA301() {
 
             {/* Part A — Employer Information */}
             <section>
-              <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 pb-1 border-b border-slate-200">
+              <h3 className="text-[11px] font-black uppercase tracking-widest text-white bg-slate-700 px-3 py-1.5 rounded mb-4 print:bg-slate-800">
                 Part A — Information about the Employer
               </h3>
               <div className="grid grid-cols-2 gap-x-8 gap-y-4">
@@ -188,7 +196,7 @@ export default function OSHA301() {
 
             {/* Part B — Employee Information */}
             <section>
-              <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 pb-1 border-b border-slate-200">
+              <h3 className="text-[11px] font-black uppercase tracking-widest text-white bg-slate-700 px-3 py-1.5 rounded mb-4 print:bg-slate-800">
                 Part B — Information about the Employee
               </h3>
               <div className="grid grid-cols-2 gap-x-8 gap-y-4">
@@ -203,7 +211,7 @@ export default function OSHA301() {
 
             {/* Part C — Health Care Professional */}
             <section>
-              <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 pb-1 border-b border-slate-200">
+              <h3 className="text-[11px] font-black uppercase tracking-widest text-white bg-slate-700 px-3 py-1.5 rounded mb-4 print:bg-slate-800">
                 Part C — Information about the Physician or Other Health Care Professional
               </h3>
               <div className="grid grid-cols-2 gap-x-8 gap-y-4">
@@ -216,8 +224,8 @@ export default function OSHA301() {
 
             {/* Part D — Case Description */}
             <section>
-              <div className="flex items-center justify-between mb-4 pb-1 border-b border-slate-200">
-                <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">
+              <div className="flex items-center justify-between mb-4 gap-3">
+                <h3 className="text-[11px] font-black uppercase tracking-widest text-white bg-slate-700 px-3 py-1.5 rounded print:bg-slate-800">
                   Part D — Information about the Case
                 </h3>
                 {!generated && (
@@ -226,7 +234,7 @@ export default function OSHA301() {
                     disabled={generating}
                     className="print:hidden flex items-center gap-1.5 text-xs font-semibold text-teal-600 hover:text-teal-800 disabled:opacity-50 transition-colors"
                   >
-                    {generating ? "Generating…" : "✨ AI draft these fields"}
+                    {generating ? "Generating…" : <><Sparkles size={12} aria-hidden="true" /> AI draft these fields</>}
                   </button>
                 )}
               </div>
@@ -270,7 +278,7 @@ export default function OSHA301() {
 
             {/* Part E — Signatures */}
             <section>
-              <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 pb-1 border-b border-slate-200">
+              <h3 className="text-[11px] font-black uppercase tracking-widest text-white bg-slate-700 px-3 py-1.5 rounded mb-4 print:bg-slate-800">
                 Part E — Completed by
               </h3>
               <div className="grid grid-cols-2 gap-x-8 gap-y-4">

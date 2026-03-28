@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 import StatusBadge from "../../components/StatusBadge";
+import { X } from "lucide-react";
 
 const NAVY = "#0f2d52";
 
@@ -95,9 +96,10 @@ export default function MyReports() {
             {search && (
               <button
                 onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                aria-label="Clear search"
               >
-                ✕
+                <X size={14} aria-hidden="true" />
               </button>
             )}
           </div>

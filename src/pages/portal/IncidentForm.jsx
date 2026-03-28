@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, Children, cloneElement, isValidElement } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
+import { Sparkles } from "lucide-react";
 
 function FormCoach({ description, injuryType, location, shift, onApply }) {
   const [suggestions, setSuggestions] = useState([]);
@@ -56,7 +57,7 @@ function FormCoach({ description, injuryType, location, shift, onApply }) {
             Reviewing your description…
           </>
         ) : (
-          <>✨ Get writing tips</>
+          <><Sparkles size={12} aria-hidden="true" /> Get writing tips</>
         )}
       </button>
 
@@ -109,13 +110,19 @@ function StepIndicator({ current, total }) {
 }
 
 function FormField({ label, required, children, hint }) {
+  const childWithAria = required
+    ? Children.map(children, (child) =>
+        isValidElement(child) ? cloneElement(child, { "aria-required": "true" }) : child
+      )
+    : children;
   return (
     <div className="mb-4">
       <label className="block text-sm font-medium text-slate-700 mb-1">
-        {label} {required && <span className="text-rose-400">*</span>}
+        {label} {required && <span className="text-rose-400" aria-hidden="true">*</span>}
+        {required && <span className="sr-only">(required)</span>}
       </label>
-      {children}
-      {hint && <p className="text-xs text-slate-400 mt-1">{hint}</p>}
+      {childWithAria}
+      {hint && <p className="text-xs text-slate-500 mt-1">{hint}</p>}
     </div>
   );
 }

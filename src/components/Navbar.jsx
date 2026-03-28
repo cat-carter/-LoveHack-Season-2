@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import Logo from "./Logo";
+import { ClipboardList, MessageSquare, CheckCircle, User, Bell, X } from "lucide-react";
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -47,7 +48,7 @@ export default function Navbar() {
         .filter((c) => c.reviewStatus === "Pending")
         .map((c) => ({
           id: c.id,
-          icon: "📋",
+          Icon: ClipboardList,
           title: "Action needed: Awaiting review",
           detail: `${c.id} · ${c.injuryType} · ${c.employeeName}`,
           time: c.submittedAt,
@@ -62,7 +63,7 @@ export default function Navbar() {
           if (pendingNotes.length > 0) {
             items.push({
               id: `note-${c.id}`,
-              icon: "💬",
+              Icon: MessageSquare,
               title: "Action requested on your report",
               detail: `${c.id} · ${pendingNotes[pendingNotes.length - 1].text.slice(0, 50)}…`,
               time: pendingNotes[pendingNotes.length - 1].at,
@@ -73,7 +74,7 @@ export default function Navbar() {
           if (c.reviewer !== null) {
             items.push({
               id: c.id,
-              icon: c.reviewStatus === "Reviewed" ? "✅" : "👤",
+              Icon: c.reviewStatus === "Reviewed" ? CheckCircle : User,
               title: c.reviewStatus === "Reviewed" ? "Your report was reviewed" : `Assigned to ${c.reviewer}`,
               detail: `${c.id} · ${c.injuryType}`,
               time: c.submittedAt,
@@ -176,15 +177,15 @@ export default function Navbar() {
                           Mark all as read
                         </button>
                       )}
-                      <button onClick={() => setPanelOpen(false)} className="text-slate-400 hover:text-slate-700 transition-colors leading-none" title="Close">
-                        ✕
+                      <button onClick={() => setPanelOpen(false)} className="text-slate-400 hover:text-slate-700 transition-colors" title="Close" aria-label="Close notifications">
+                        <X size={14} aria-hidden="true" />
                       </button>
                     </div>
                   </div>
 
                   {visibleNotifications.length === 0 ? (
                     <div className="px-4 py-8 text-center">
-                      <p className="text-2xl mb-2">🔔</p>
+                      <Bell size={24} className="mx-auto mb-2 text-slate-300" aria-hidden="true" />
                       <p className="text-sm text-slate-500">You're all caught up!</p>
                       <p className="text-xs text-slate-400 mt-1">No pending notifications.</p>
                     </div>
@@ -197,7 +198,7 @@ export default function Navbar() {
                             onClick={() => setPanelOpen(false)}
                             className="flex items-start gap-3 px-4 py-3 flex-1 min-w-0"
                           >
-                            <span className="text-base mt-0.5 shrink-0">{n.icon}</span>
+                            <n.Icon size={16} aria-hidden="true" className="text-slate-500 mt-0.5 shrink-0" />
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-slate-800 leading-snug">{n.title}</p>
                               <p className="text-xs text-slate-500 mt-0.5 truncate">{n.detail}</p>
@@ -210,7 +211,7 @@ export default function Navbar() {
                               className="shrink-0 px-2 py-3 text-slate-300 hover:text-slate-600 opacity-0 group-hover:opacity-100 transition-all"
                               title="Dismiss"
                             >
-                              ✕
+                              <X size={12} aria-hidden="true" />
                             </button>
                           )}
                         </div>

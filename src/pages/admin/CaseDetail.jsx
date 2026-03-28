@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 import StatusBadge from "../../components/StatusBadge";
+import { Printer, Bot, Sparkles, AlertTriangle } from "lucide-react";
 
 function Section({ title, children }) {
   return (
@@ -15,8 +16,8 @@ function Section({ title, children }) {
 function Field({ label, value }) {
   return (
     <div className="mb-3">
-      <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-0.5">{label}</p>
-      <p className="text-sm text-slate-700">{value || <span className="text-slate-300 italic">Not provided</span>}</p>
+      <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-0.5">{label}</p>
+      <p className="text-sm text-slate-700">{value || <span className="text-slate-400 italic">Not provided</span>}</p>
     </div>
   );
 }
@@ -97,7 +98,7 @@ export default function CaseDetail() {
               onClick={() => window.print()}
               className="print:hidden flex items-center gap-1.5 text-sm font-medium text-slate-500 border border-slate-200 rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
             >
-              🖨️ Print / PDF
+              <Printer size={14} aria-hidden="true" /> Print / PDF
             </button>
             <div className="flex gap-2">
               <StatusBadge status={c.caseStatus} />
@@ -115,7 +116,7 @@ export default function CaseDetail() {
             { label: "Employee Status", status: c.employeeStatus },
           ].map(({ label, status }) => (
             <div key={label} className="bg-white rounded-xl border border-slate-200 p-3 text-center">
-              <p className="text-xs text-slate-400 mb-1">{label}</p>
+              <p className="text-xs text-slate-500 mb-1">{label}</p>
               <StatusBadge status={status} />
             </div>
           ))}
@@ -123,26 +124,32 @@ export default function CaseDetail() {
 
         {/* AI Triage */}
         {c.triage && (
-          <div className={`rounded-2xl border p-5 mb-6 ${
-            c.triage.severity === "high"
-              ? "bg-red-50 border-red-200"
-              : c.triage.severity === "medium"
-              ? "bg-amber-50 border-amber-200"
-              : "bg-green-50 border-green-100"
-          }`}>
+          <div
+            aria-live="polite"
+            className={`rounded-2xl border p-5 mb-6 ${
+              c.triage.severity === "high"
+                ? "bg-red-50 border-red-200"
+                : c.triage.severity === "medium"
+                ? "bg-amber-50 border-amber-200"
+                : "bg-green-50 border-green-100"
+            }`}
+          >
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-base">🤖</span>
+              <Bot size={16} aria-hidden="true" className="text-slate-500 shrink-0" />
               <h2 className="text-sm font-semibold text-slate-800">AI Triage Analysis</h2>
-              <span className="text-xs text-slate-400 ml-auto">Powered by n8n + Claude</span>
+              <span className="text-xs text-slate-500 ml-auto">Powered by n8n + Claude</span>
             </div>
             <div className="flex flex-wrap gap-2 mb-3">
-              <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
+              <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
                 c.triage.severity === "high"
                   ? "bg-red-100 text-red-700"
                   : c.triage.severity === "medium"
                   ? "bg-amber-100 text-amber-700"
                   : "bg-green-100 text-green-700"
               }`}>
+                {c.triage.severity === "high" && <span aria-hidden="true">▲</span>}
+                {c.triage.severity === "medium" && <span aria-hidden="true">◆</span>}
+                {c.triage.severity === "low" && <span aria-hidden="true">●</span>}
                 {c.triage.severity} severity
               </span>
               {c.triage.oshaRecordable && (
@@ -206,12 +213,12 @@ export default function CaseDetail() {
               to={`/admin/cases/${c.id}/osha-301`}
               className="shrink-0 inline-flex items-center gap-2 bg-teal-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors shadow-sm print:hidden"
             >
-              ✨ Open OSHA 301 Form →
+              <Sparkles size={14} aria-hidden="true" /> Open OSHA 301 Form →
             </Link>
           </div>
           {c.osha301Status !== "Completed" && (
             <div className="mt-4 bg-amber-50 border border-amber-100 rounded-lg px-4 py-3 text-xs text-amber-800 flex gap-2 items-start">
-              <span>⚠️</span>
+              <AlertTriangle size={14} aria-hidden="true" className="shrink-0 mt-0.5" />
               <span>OSHA Form 301 must be completed within 7 calendar days of receiving notice that a recordable case occurred. Open the form to generate AI-drafted narrative fields and print/download for your records.</span>
             </div>
           )}

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 import StatusBadge from "../../components/StatusBadge";
+import { ClipboardList, AlertTriangle, Shield } from "lucide-react";
 
 const NAVY = "#0f2d52";
 
@@ -56,7 +57,7 @@ export default function StaffPortal() {
             className="text-white rounded-2xl p-5 flex flex-col gap-2 transition-all hover:opacity-90 shadow-sm"
             style={{ background: NAVY }}
           >
-            <span className="text-2xl">📋</span>
+            <ClipboardList size={22} aria-hidden="true" className="opacity-90" />
             <div className="flex items-center gap-1.5">
               <span className="font-bold text-sm">New Incident Report</span>
               <span className="text-lg font-bold opacity-80">+</span>
@@ -67,7 +68,7 @@ export default function StaffPortal() {
             to="/portal/near-miss/new"
             className="bg-white border border-slate-200 text-slate-700 rounded-2xl p-5 flex flex-col gap-2 transition-colors shadow-sm hover:bg-amber-50 hover:border-amber-300 hover:text-amber-800 group"
           >
-            <span className="text-2xl">⚠️</span>
+            <AlertTriangle size={22} aria-hidden="true" className="text-slate-600 group-hover:text-amber-700 transition-colors" />
             <div className="flex items-center gap-1.5">
               <span className="font-bold text-sm">Near Miss Report</span>
               <span className="text-lg font-bold opacity-60 group-hover:opacity-100">+</span>
@@ -78,7 +79,7 @@ export default function StaffPortal() {
 
         {/* Safety encouragement */}
         <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-8 flex gap-3 items-start">
-          <span className="text-blue-500 text-lg mt-0.5">🛡</span>
+          <Shield size={18} aria-hidden="true" className="text-blue-500 mt-0.5 shrink-0" />
           <div>
             <p className="text-sm font-semibold text-slate-800">Reporting is safe and encouraged</p>
             <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">All reports are reviewed by your administrator. This facility maintains a <strong>non-punitive</strong> reporting culture.</p>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Link } from "react-router-dom";
 import StatusBadge from "../components/StatusBadge";
+import { Shield } from "lucide-react";
 
 const NAVY = "#0f2d52";
 
@@ -284,11 +285,8 @@ export default function UserProfile() {
                         className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
                         style={{ background: "#e8f0f9" }}
                       >
-                        <span className="text-sm" style={{ color: NAVY }}>
-                          {c.injuryType === "Musculoskeletal" ? "🦴" :
-                           c.injuryType === "Needlestick" ? "💉" :
-                           c.injuryType === "Slip / Fall" ? "⚡" :
-                           c.injuryType === "Near Miss" ? "⚠" : "📋"}
+                        <span className="text-sm font-bold" style={{ color: NAVY }}>
+                          {c.injuryType === "Near Miss" ? "!" : c.injuryType?.[0] ?? "?"}
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">
@@ -323,7 +321,7 @@ export default function UserProfile() {
             {/* Safety acknowledgement card */}
             <div className="mt-4 bg-blue-50 border border-blue-100 rounded-2xl p-5">
               <div className="flex items-start gap-3">
-                <span className="text-blue-500 text-lg mt-0.5">🛡</span>
+                <Shield size={18} aria-hidden="true" className="text-blue-500 mt-0.5 shrink-0" />
                 <div>
                   <p className="text-sm font-semibold text-slate-800">Non-punitive reporting commitment</p>
                   <p className="text-xs text-slate-600 mt-1 leading-relaxed">

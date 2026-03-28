@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useApp } from "../context/AppContext";
 import { injuryTypeData, incidentsOverTime, shiftData } from "../data/mockData";
+import { Sparkles, AlertTriangle } from "lucide-react";
 
 const NAVY = "#0f2d52";
 
@@ -59,7 +60,7 @@ export default function TrendNarrative() {
       >
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-8 h-8 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
-            <span className="text-white text-base leading-none">✦</span>
+            <Sparkles size={16} aria-hidden="true" className="text-white" />
           </div>
           <div className="min-w-0">
             <p className="text-white font-bold text-sm tracking-tight">AI Safety Brief</p>
@@ -113,7 +114,7 @@ export default function TrendNarrative() {
 
         {error && (
           <div className="flex items-center gap-2 text-sm text-rose-600 bg-rose-50 border border-rose-100 rounded-xl px-4 py-3">
-            <span>⚠</span> {error}
+            <AlertTriangle size={14} aria-hidden="true" className="shrink-0" /> {error}
           </div>
         )}
 

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useApp } from "../context/AppContext";
+import { Sparkles, X, Send } from "lucide-react";
 
 const SUGGESTIONS = [
   "What's driving the increase in musculoskeletal injuries?",
@@ -59,7 +60,7 @@ export default function AISafetyAssistant() {
         className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-teal-600 hover:bg-teal-700 text-white rounded-full shadow-lg flex items-center justify-center text-xl transition-all"
         title="AI Safety Assistant"
       >
-        {open ? "✕" : "✦"}
+        {open ? <X size={20} aria-hidden="true" /> : <Sparkles size={20} aria-hidden="true" />}
       </button>
 
       {/* Panel */}
@@ -70,7 +71,7 @@ export default function AISafetyAssistant() {
           {/* Header */}
           <div className="bg-teal-600 px-5 py-4">
             <div className="flex items-center gap-2">
-              <span className="text-white text-lg">✦</span>
+              <Sparkles size={16} aria-hidden="true" className="text-white" />
               <div>
                 <p className="text-white font-semibold text-sm">AI Safety Assistant</p>
                 <p className="text-teal-100 text-xs">Powered by Claude · Ask about your incident data</p>
@@ -79,7 +80,7 @@ export default function AISafetyAssistant() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+          <div aria-live="polite" aria-label="AI Safety Assistant conversation" className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
             {messages.length === 0 && (
               <div>
                 <p className="text-xs text-slate-400 text-center mb-4">Ask a question about your facility's safety data</p>
@@ -100,7 +101,7 @@ export default function AISafetyAssistant() {
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 {m.role === "ai" && (
-                  <div className="w-6 h-6 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 text-xs mr-2 mt-0.5 shrink-0">✦</div>
+                  <div className="w-6 h-6 rounded-full bg-teal-100 flex items-center justify-center mr-2 mt-0.5 shrink-0"><Sparkles size={12} aria-hidden="true" className="text-teal-700" /></div>
                 )}
                 <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap
                   ${m.role === "user"
@@ -114,7 +115,7 @@ export default function AISafetyAssistant() {
 
             {loading && (
               <div className="flex items-start gap-2">
-                <div className="w-6 h-6 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 text-xs shrink-0">✦</div>
+                <div className="w-6 h-6 rounded-full bg-teal-100 flex items-center justify-center shrink-0"><Sparkles size={12} aria-hidden="true" className="text-teal-700" /></div>
                 <div className="bg-slate-50 border border-slate-200 rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1 items-center">
                   <span className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                   <span className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -139,8 +140,9 @@ export default function AISafetyAssistant() {
               onClick={() => sendMessage()}
               disabled={loading || !input.trim()}
               className="bg-teal-600 hover:bg-teal-700 disabled:bg-slate-200 text-white rounded-xl px-4 py-2 text-sm font-medium transition-colors"
+              aria-label="Send message"
             >
-              →
+              <Send size={14} aria-hidden="true" />
             </button>
           </div>
         </div>

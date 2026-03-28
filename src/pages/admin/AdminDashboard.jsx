@@ -8,6 +8,7 @@ import StatusBadge from "../../components/StatusBadge";
 import TrendNarrative from "../../components/TrendNarrative";
 import AISafetyAssistant from "../../components/AISafetyAssistant";
 import { Link } from "react-router-dom";
+import { AlertTriangle, TrendingUp, Clock, ArrowUpRight } from "lucide-react";
 
 const NAVY = "#0f2d52";
 const COLORS = ["#0f2d52", "#1e6091", "#0d9488", "#f59e0b", "#94a3b8"];
@@ -71,21 +72,25 @@ function ChartTooltip({ active, payload, label }) {
 }
 
 // ── KPI card ────────────────────────────────────────────────────────────────
-function KpiCard({ label, value, sub, trend, accentColor = NAVY }) {
+function KpiCard({ label, value, sub, trend, accentColor = NAVY, urgent }) {
   const trendUp = trend > 0;
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm flex flex-col gap-2 hover:shadow-md transition-shadow">
+    <div className={`rounded-2xl p-5 shadow-sm flex flex-col gap-2 hover:shadow-md transition-shadow ${
+      urgent
+        ? "bg-amber-50 border-2 border-amber-300"
+        : "bg-white border border-slate-100"
+    }`}>
       <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest">{label}</span>
       <div className="flex items-end gap-3">
-        <span className="text-4xl font-black text-slate-800">{value}</span>
+        <span className={`text-4xl font-black ${urgent ? "text-amber-700" : "text-slate-800"}`}>{value}</span>
         {trend !== undefined && (
           <span className={`text-xs font-semibold mb-1.5 px-2 py-0.5 rounded-full ${trendUp ? "bg-rose-50 text-rose-600" : "bg-teal-50 text-teal-700"}`}>
-            {trendUp ? "↑" : "↓"} {Math.abs(trend)}%
+            {trendUp ? <ArrowUpRight size={10} className="inline mr-0.5" aria-label="up" /> : "↓"}{Math.abs(trend)}%
           </span>
         )}
       </div>
       {sub && <p className="text-xs text-slate-500">{sub}</p>}
-      <div className="h-0.5 w-12 rounded-full mt-1" style={{ background: accentColor }} />
+      <div className="h-0.5 w-12 rounded-full mt-1" style={{ background: urgent ? "#d97706" : accentColor }} />
     </div>
   );
 }
@@ -122,7 +127,7 @@ function OshaReminder({ cases }) {
 
   return (
     <div className="mb-6 bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-4">
-      <div className="text-2xl mt-0.5">⚠️</div>
+      <AlertTriangle size={20} aria-hidden="true" className="text-amber-600 shrink-0 mt-0.5" />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold text-amber-900">
           {pending.length} case{pending.length > 1 ? "s" : ""} with OSHA forms pending
@@ -191,7 +196,7 @@ export default function AdminDashboard() {
         {/* KPI row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <KpiCard label="Total Cases" value={cases.length} sub="All time" accentColor={NAVY} />
-          <KpiCard label="Open Cases" value={openCases} sub="Require resolution" trend={20} accentColor="#f59e0b" />
+          <KpiCard label="Open Cases" value={openCases} sub="Require resolution" trend={20} accentColor="#f59e0b" urgent={openCases > 0} />
           <KpiCard label="Pending Review" value={pendingReview} sub="Awaiting admin action" trend={0} accentColor="#1e6091" />
           <KpiCard label="Staff on Leave" value={onLeave} sub="Work-related injury" trend={0} accentColor="#f43f5e" />
         </div>
@@ -295,26 +300,26 @@ export default function AdminDashboard() {
             <div className="space-y-3">
               {[
                 {
-                  icon: "↑",
+                  Icon: TrendingUp,
                   bg: "bg-rose-50", border: "border-rose-100", iconColor: "text-rose-500",
                   title: "Musculoskeletal injuries up 35% this quarter",
                   body: "14 of 40 incidents are muscle/back-related. Day shift CNAs are most affected. Consider scheduling a lift safety refresher.",
                 },
                 {
-                  icon: "⏱",
+                  Icon: Clock,
                   bg: "bg-amber-50", border: "border-amber-100", iconColor: "text-amber-500",
                   title: "Peak incident window: 06:00 – 09:00 on Day shift",
                   body: "Morning care routines account for the highest risk period. Review staffing ratios at shift start.",
                 },
                 {
-                  icon: "↑",
+                  Icon: TrendingUp,
                   bg: "bg-teal-50", border: "border-teal-100", iconColor: "text-teal-600",
                   title: "Near-miss reporting up 20% vs. last quarter",
                   body: "Staff are engaging with the reporting system proactively — a strong safety culture signal worth acknowledging.",
                 },
               ].map((a) => (
                 <div key={a.title} className={`flex gap-3 p-4 ${a.bg} border ${a.border} rounded-xl`}>
-                  <span className={`text-lg font-bold ${a.iconColor} mt-0.5 w-5 shrink-0`}>{a.icon}</span>
+                  <a.Icon size={16} aria-hidden="true" className={`${a.iconColor} mt-0.5 shrink-0`} />
                   <div>
                     <p className="text-sm font-semibold text-slate-800">{a.title}</p>
                     <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">{a.body}</p>
