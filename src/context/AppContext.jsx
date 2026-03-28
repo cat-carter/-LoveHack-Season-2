@@ -44,6 +44,20 @@ export function AppProvider({ children }) {
       body: JSON.stringify({ type: "new_case", caseData: newCase }),
     }).catch(() => {});
 
+    // AI triage via n8n — updates the case when result returns
+    fetch("/api/triage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ caseData: newCase }),
+    })
+      .then((r) => r.json())
+      .then((triage) => {
+        setCases((prev) =>
+          prev.map((c) => (c.id === newCase.id ? { ...c, triage } : c))
+        );
+      })
+      .catch(() => {});
+
     return newCase;
   }
 

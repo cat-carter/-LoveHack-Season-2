@@ -121,6 +121,53 @@ export default function CaseDetail() {
           ))}
         </div>
 
+        {/* AI Triage */}
+        {c.triage && (
+          <div className={`rounded-2xl border p-5 mb-6 ${
+            c.triage.severity === "high"
+              ? "bg-red-50 border-red-200"
+              : c.triage.severity === "medium"
+              ? "bg-amber-50 border-amber-200"
+              : "bg-green-50 border-green-100"
+          }`}>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-base">🤖</span>
+              <h2 className="text-sm font-semibold text-slate-800">AI Triage Analysis</h2>
+              <span className="text-xs text-slate-400 ml-auto">Powered by n8n + Claude</span>
+            </div>
+            <div className="flex flex-wrap gap-2 mb-3">
+              <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
+                c.triage.severity === "high"
+                  ? "bg-red-100 text-red-700"
+                  : c.triage.severity === "medium"
+                  ? "bg-amber-100 text-amber-700"
+                  : "bg-green-100 text-green-700"
+              }`}>
+                {c.triage.severity} severity
+              </span>
+              {c.triage.oshaRecordable && (
+                <span className="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-orange-100 text-orange-700">
+                  OSHA Recordable
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-slate-700 mb-3">{c.triage.summary}</p>
+            {c.triage.actions?.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Recommended Actions</p>
+                <ul className="space-y-1.5">
+                  {c.triage.actions.map((action, i) => (
+                    <li key={i} className="flex gap-2 text-sm text-slate-600">
+                      <span className="text-slate-400 shrink-0 mt-0.5">→</span>
+                      {action}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Incident Report */}
         <Section title="Incident Report">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
@@ -141,32 +188,33 @@ export default function CaseDetail() {
           </div>
         </Section>
 
-        {/* OSHA 301 – auto-populated */}
-        <Section title="OSHA 301 — Individual Case Record (Auto-populated)">
-          <div className="bg-teal-50 border border-teal-100 rounded-lg px-4 py-2 mb-4 text-xs text-teal-700">
-            Fields auto-populated from incident report submission.
+        {/* OSHA 301 */}
+        <Section title="OSHA 301 — Injury and Illness Incident Report">
+          <div className="flex items-start gap-4">
+            <div className="flex-1">
+              <p className="text-sm text-slate-600 mb-1">
+                The full OSHA 301 form is pre-filled from this incident report. Use the AI draft feature to auto-complete the 4 required narrative sections, then print or save as PDF.
+              </p>
+              <p className="text-xs text-slate-400">
+                Status: <span className={`font-semibold ${c.osha301Status === "Completed" ? "text-teal-600" : "text-amber-600"}`}>{c.osha301Status}</span>
+                {c.osha301Status !== "Completed" && (
+                  <span className="ml-2 text-slate-400">· Due within 7 days of incident</span>
+                )}
+              </p>
+            </div>
+            <Link
+              to={`/admin/cases/${c.id}/osha-301`}
+              className="shrink-0 inline-flex items-center gap-2 bg-teal-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors shadow-sm print:hidden"
+            >
+              ✨ Open OSHA 301 Form →
+            </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
-            <Field label="Case Number" value={c.id} />
-            <Field label="Date of Injury" value={c.incidentDate} />
-            <Field label="Time Employee Began Work" value={`${c.shift} shift`} />
-            <Field label="Time of Event" value={c.incidentTime} />
-            <Field label="Employee Full Name" value={c.employeeName} />
-            <Field label="Date Hired" value="2022-06-15" />
-            <Field label="Date of Birth" value="1985-04-22" />
-            <Field label="Gender" value="Female" />
-          </div>
-          <Field label="What was the employee doing just before the incident?" value={c.injuryDescription} />
-          <Field label="What happened?" value={c.injuryDescription} />
-          <Field label="What was the injury or illness?" value={c.symptoms} />
-          <Field label="What object or substance directly harmed the employee?" value="Patient body weight / transfer without lift equipment" />
-          <Field label="Physician / Health Care Professional" value={c.medicalEvaluation ? "Dr. E. Nguyen — St. Mary's Occupational Health" : "Not applicable"} />
-          <Field label="Was employee treated in an emergency room?" value={c.medicalEvaluation ? "No" : "N/A"} />
-          <Field label="Was employee hospitalized overnight?" value="No" />
-          <div className="grid grid-cols-2 gap-x-8 mt-2">
-            <Field label="Completed by" value={c.submittedBy} />
-            <Field label="Date Completed" value={c.incidentDate} />
-          </div>
+          {c.osha301Status !== "Completed" && (
+            <div className="mt-4 bg-amber-50 border border-amber-100 rounded-lg px-4 py-3 text-xs text-amber-800 flex gap-2 items-start">
+              <span>⚠️</span>
+              <span>OSHA Form 301 must be completed within 7 calendar days of receiving notice that a recordable case occurred. Open the form to generate AI-drafted narrative fields and print/download for your records.</span>
+            </div>
+          )}
         </Section>
 
         {/* OSHA 300 link */}

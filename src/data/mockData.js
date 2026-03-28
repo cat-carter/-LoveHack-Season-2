@@ -36,6 +36,16 @@ export const mockCases = [
       { action: "Status updated to Reviewed", by: "James Okafor", at: "2025-03-10T11:30:00" },
       { action: "Workers' comp form completed", by: "James Okafor", at: "2025-03-11T14:00:00" },
     ],
+    triage: {
+      severity: "high",
+      summary: "Unsafe manual patient transfer caused lumbar strain requiring medical treatment — mechanical lift policy was not followed.",
+      actions: [
+        "Confirm mechanical lift availability in Room 214 and audit CNA equipment access",
+        "Schedule mandatory lift equipment refresher for Day shift CNAs",
+        "Review return-to-work plan and modified duty options for employee",
+      ],
+      oshaRecordable: true,
+    },
   },
   {
     id: "CASE-2025-002",
@@ -66,6 +76,16 @@ export const mockCases = [
       { action: "Reviewer assigned: Priya Nair", by: "James Okafor", at: "2025-03-14T15:30:00" },
       { action: "Status updated to Reviewed", by: "Priya Nair", at: "2025-03-15T09:15:00" },
     ],
+    triage: {
+      severity: "high",
+      summary: "Needlestick with bloodborne pathogen exposure risk — recapping syringe violates standard precautions and requires full exposure protocol.",
+      actions: [
+        "Confirm bloodborne pathogen exposure protocol is complete and all follow-up labs are scheduled",
+        "Conduct sharps safety refresher for all Medication Room staff this week",
+        "Audit sharps container placement and availability of safety syringes",
+      ],
+      oshaRecordable: true,
+    },
   },
   {
     id: "CASE-2025-003",
@@ -94,6 +114,16 @@ export const mockCases = [
     auditTrail: [
       { action: "Case created", by: "Angela Torres", at: "2025-03-17T07:20:00" },
     ],
+    triage: {
+      severity: "medium",
+      summary: "Slip on unmarked wet floor indicates a housekeeping protocol failure — wet floor signs were not placed after overnight mopping.",
+      actions: [
+        "Issue corrective notice to night cleaning crew for wet floor sign protocol",
+        "Audit East Wing corridor for non-slip matting near the supply closet",
+        "Implement a sign-off checklist for overnight floor care procedures",
+      ],
+      oshaRecordable: false,
+    },
   },
   {
     id: "CASE-2025-004",
@@ -122,6 +152,16 @@ export const mockCases = [
     auditTrail: [
       { action: "Case created", by: "Thomas Reyes", at: "2025-03-18T12:05:00" },
     ],
+    triage: {
+      severity: "high",
+      summary: "Shoulder strain from solo bathroom assist of a fall-risk patient — call-for-help protocol was bypassed, creating both employee and patient risk.",
+      actions: [
+        "Immediately review two-person assist requirements for all fall-risk patients in Room 108",
+        "Remind all nursing staff of call-for-help protocol before bathroom assists",
+        "Confirm rotator cuff treatment plan and assess need for modified duty assignment",
+      ],
+      oshaRecordable: true,
+    },
   },
   {
     id: "CASE-2025-005",
@@ -153,6 +193,15 @@ export const mockCases = [
       { action: "Status updated to Reviewed", by: "James Okafor", at: "2025-03-01T10:00:00" },
       { action: "Case closed", by: "James Okafor", at: "2025-03-01T10:05:00" },
     ],
+    triage: {
+      severity: "low",
+      summary: "Near-miss patient fall during meal service highlights a staffing gap — one CNA alone with dementia-unit residents at mealtime is insufficient.",
+      actions: [
+        "Review staffing ratios for evening meal service in the dining room",
+        "Consider dedicated aide coverage for dementia-unit residents during meals",
+      ],
+      oshaRecordable: false,
+    },
   },
 ];
 
@@ -180,6 +229,26 @@ export const shiftData = [
 ];
 
 export const mockUsers = [
-  { id: 1, name: "Maria Santos", role: "staff", position: "Certified Nursing Assistant", manager: "James Okafor" },
-  { id: 2, name: "James Okafor", role: "admin", position: "Administrator", manager: null },
+  {
+    id: 1,
+    name: "Maria Santos",
+    role: "staff",
+    position: "Certified Nursing Assistant",
+    manager: "James Okafor",
+    address: "142 Maple Street",
+    city: "Springfield",
+    state: "IL",
+    zip: "62701",
+    dateOfBirth: "1985-04-22",
+    dateHired: "2022-06-15",
+    gender: "Female",
+  },
+  {
+    id: 2,
+    name: "James Okafor",
+    role: "admin",
+    position: "Administrator",
+    manager: null,
+    phone: "217-555-0192",
+  },
 ];

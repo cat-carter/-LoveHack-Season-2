@@ -215,7 +215,9 @@ Keep it warm, clear, and action-oriented. No headers or bullet points — flowin
 });
 
 // ─── POST /api/coach ───────────────────────────────────────────────────────
-// Smart form coach: returns 2–3 specific follow-up prompts for an incident description
+// Smart form coach: proxies to n8n workflow (which calls Claude AI)
+const N8N_COACH_URL = "https://cat-carter.app.n8n.cloud/webhook/form-coach";
+
 app.post("/api/coach", async (req, res) => {
   const { description, injuryType, location, shift } = req.body;
 
@@ -223,48 +225,43 @@ app.post("/api/coach", async (req, res) => {
     return res.json({ suggestions: [] });
   }
 
-  const prompt = `You are a workplace safety reporting coach helping a nursing home employee write a complete incident report.
-
-Incident type: ${injuryType || "not specified"}
-Location: ${location || "not specified"}
-Shift: ${shift || "not specified"}
-Description written so far: "${description}"
-
-Review the description and identify 2–3 specific details that are missing or vague. For each missing detail, write a short fill-in-the-blank sentence the employee can click to add to their report. Use [brackets] for the part they need to fill in.
-
-Focus on:
-- What the employee was doing immediately before the incident
-- Whether assistive equipment (lift, gait belt, call light) was available or used
-- Environmental factors (wet floor, lighting, clutter)
-- Patient/resident involvement details
-- Witness presence
-
-Return ONLY a JSON object in this exact format — no explanation, no markdown:
-{"suggestions": ["fill-in-the-blank sentence 1", "fill-in-the-blank sentence 2", "fill-in-the-blank sentence 3"]}
-
-Examples of good fill-in-the-blank sentences:
-- "A [mechanical lift / gait belt / no assistive device] was used during the transfer."
-- "The floor was [dry / wet / recently mopped] at the time of the incident."
-- "[A colleague / No witness] was present when the incident occurred."
-- "I was [repositioning / transferring / assisting with ambulation] the resident at the time."
-
-Keep each sentence under 20 words. Only suggest sentences for details genuinely missing from the description.`;
-
   try {
-    const response = await client.messages.create({
-      model: "claude-opus-4-6",
-      max_tokens: 256,
-      messages: [{ role: "user", content: prompt }],
+    const n8nRes = await fetch(N8N_COACH_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        step: 1,
+        formData: { description, injuryType, location, shift },
+      }),
     });
 
-    let text = response.content[0].text.trim();
-    // Strip markdown code fences if Claude wrapped JSON in ```json ... ```
-    text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
-    const parsed = JSON.parse(text);
-    res.json(parsed);
+    if (!n8nRes.ok) throw new Error(`n8n returned ${n8nRes.status}`);
+    const data = await n8nRes.json();
+    res.json(data);
   } catch (err) {
-    console.error("Coach API error:", err.message);
+    console.error("n8n coach error:", err.message);
     res.status(500).json({ suggestions: [] });
+  }
+});
+
+// ─── POST /api/triage ──────────────────────────────────────────────────────
+// AI case triage: proxies to n8n workflow which calls Claude AI
+const N8N_TRIAGE_URL = "https://cat-carter.app.n8n.cloud/webhook/triage-case";
+
+app.post("/api/triage", async (req, res) => {
+  const { caseData } = req.body;
+  try {
+    const n8nRes = await fetch(N8N_TRIAGE_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ caseData }),
+    });
+    if (!n8nRes.ok) throw new Error(`n8n returned ${n8nRes.status}`);
+    const data = await n8nRes.json();
+    res.json(data);
+  } catch (err) {
+    console.error("n8n triage error:", err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -289,6 +286,49 @@ app.post("/api/notify", async (req, res) => {
   } catch (err) {
     console.error(`[notify] Email error:`, err.message);
     res.status(500).json({ sent: false, error: err.message });
+  }
+});
+
+// ─── POST /api/osha-narrative ───────────────────────────────────────────────
+// AI-drafts the 4 OSHA 301 narrative fields from incident data
+app.post("/api/osha-narrative", async (req, res) => {
+  const { caseData } = req.body;
+  const c = caseData;
+
+  const prompt = `You are completing an OSHA Form 301 Injury and Illness Incident Report for a nursing home facility. Based on the incident data below, write concise, factual, professional responses to the 4 required narrative questions. Each response should be 1-3 sentences in plain language appropriate for a government form. Do not add speculation beyond the facts provided.
+
+INCIDENT DATA:
+- Employee: ${c.employeeName}, ${c.position}
+- Date/Time: ${c.incidentDate} at ${c.incidentTime} (${c.shift} shift)
+- Location: ${c.incidentLocation}
+- Injury Type: ${c.injuryType}
+- Incident Description: ${c.injuryDescription}
+- Symptoms Reported: ${c.symptoms}
+- Medical Evaluation: ${c.medicalEvaluation ? "Yes" : "No"}${c.medicalDiagnosis ? " — Diagnosis: " + c.medicalDiagnosis : ""}
+
+Respond with only this JSON object, no other text:
+{
+  "q1": "Answer to: What was the employee doing just before the incident occurred? Describe the task and any equipment or materials involved.",
+  "q2": "Answer to: What happened? Tell us how the injury or illness occurred.",
+  "q3": "Answer to: What was the injury or illness? Tell us the part of the body that was affected.",
+  "q4": "Answer to: What object or substance directly harmed the employee? (e.g., concrete floor, chlorine, radial arm saw)"
+}`;
+
+  try {
+    const response = await client.messages.create({
+      model: "claude-opus-4-6",
+      max_tokens: 700,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const text = response.content[0].text;
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("No JSON found in response");
+    const narratives = JSON.parse(jsonMatch[0]);
+    res.json(narratives);
+  } catch (err) {
+    console.error("OSHA narrative error:", err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 

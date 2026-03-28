@@ -135,6 +135,11 @@ export default function IncidentForm() {
     managerName: user?.manager || "",
     shift: "",
     position: user?.position || "",
+    employeeAddress: user?.address || "",
+    employeeCityStateZip: user ? `${user.city || ""}, ${user.state || ""} ${user.zip || ""}`.trim().replace(/^,\s*/, "") : "",
+    dateOfBirth: user?.dateOfBirth || "",
+    dateHired: user?.dateHired || "",
+    gender: user?.gender || "",
     incidentDate: "",
     incidentTime: "",
     incidentLocation: "",
@@ -204,6 +209,35 @@ export default function IncidentForm() {
                 <FormField label="Event Time" required>
                   <input type="time" className={inputCls} value={form.incidentTime} onChange={(e) => update("incidentTime", e.target.value)} />
                 </FormField>
+              </div>
+              <div className="mt-2 mb-1">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 pb-2 border-b border-slate-100">Employee Profile <span className="normal-case font-normal text-slate-400">— auto-filled from HR record, edit if needed</span></p>
+              </div>
+              <FormField label="Home Address" hint="Street address">
+                <input className={inputCls} value={form.employeeAddress} onChange={(e) => update("employeeAddress", e.target.value)} placeholder="Street address" />
+              </FormField>
+              <FormField label="City, State, ZIP">
+                <input className={inputCls} value={form.employeeCityStateZip} onChange={(e) => update("employeeCityStateZip", e.target.value)} placeholder="City, State ZIP" />
+              </FormField>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <FormField label="Date of Birth">
+                  <input type="date" className={inputCls} value={form.dateOfBirth} onChange={(e) => update("dateOfBirth", e.target.value)} />
+                </FormField>
+                <FormField label="Date Hired">
+                  <input type="date" className={inputCls} value={form.dateHired} onChange={(e) => update("dateHired", e.target.value)} />
+                </FormField>
+                <FormField label="Gender">
+                  <select className={selectCls} value={form.gender} onChange={(e) => update("gender", e.target.value)}>
+                    <option value="">Select…</option>
+                    <option>Female</option>
+                    <option>Male</option>
+                    <option>Non-binary</option>
+                    <option>Prefer not to say</option>
+                  </select>
+                </FormField>
+              </div>
+              <div className="mt-4 mb-1">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 pb-2 border-b border-slate-100">Incident Details</p>
               </div>
               <FormField label="Incident Location" required hint="e.g. Room 214, Corridor East Wing, Dining Room">
                 <input className={inputCls} value={form.incidentLocation} onChange={(e) => update("incidentLocation", e.target.value)} placeholder="Where did this occur?" />
@@ -333,6 +367,11 @@ export default function IncidentForm() {
                   ["Manager", form.managerName],
                   ["Shift", form.shift],
                   ["Position", form.position],
+                  ["Address", form.employeeAddress],
+                  ["City, State, ZIP", form.employeeCityStateZip],
+                  ["Date of Birth", form.dateOfBirth],
+                  ["Date Hired", form.dateHired],
+                  ["Gender", form.gender],
                   ["Date & Time", `${form.incidentDate} at ${form.incidentTime}`],
                   ["Location", form.incidentLocation],
                   ["Injury Type", form.injuryType],

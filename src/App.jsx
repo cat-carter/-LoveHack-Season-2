@@ -6,6 +6,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import CaseList from "./pages/admin/CaseList";
 import CaseDetail from "./pages/admin/CaseDetail";
 import OSHA300 from "./pages/admin/OSHA300";
+import OSHA301 from "./pages/admin/OSHA301";
 import StaffPortal from "./pages/portal/StaffPortal";
 import IncidentForm from "./pages/portal/IncidentForm";
 import CaseView from "./pages/portal/CaseView";
@@ -35,6 +36,7 @@ function AppRoutes() {
         <Route path="/admin/cases" element={<ProtectedRoute requiredRole="admin"><CaseList /></ProtectedRoute>} />
         <Route path="/admin/cases/:id" element={<ProtectedRoute requiredRole="admin"><CaseDetail /></ProtectedRoute>} />
         <Route path="/admin/osha300" element={<ProtectedRoute requiredRole="admin"><OSHA300 /></ProtectedRoute>} />
+        <Route path="/admin/cases/:id/osha-301" element={<ProtectedRoute requiredRole="admin"><OSHA301 /></ProtectedRoute>} />
         <Route path="/admin/profile" element={<ProtectedRoute requiredRole="admin"><UserProfile /></ProtectedRoute>} />
 
         {/* Staff routes */}

@@ -102,6 +102,60 @@ function DonutCenter({ total }) {
   );
 }
 
+function OshaReminder({ cases }) {
+  // Cases with pending OSHA forms (recordable cases only)
+  const pending = cases.filter(
+    (c) =>
+      c.triage?.oshaRecordable !== false &&
+      (c.osha300Status === "Pending" || c.osha301Status === "Pending")
+  );
+
+  if (pending.length === 0) return null;
+
+  // Find the oldest overdue case
+  const oldest = pending.reduce((a, b) =>
+    new Date(a.submittedAt) < new Date(b.submittedAt) ? a : b
+  );
+  const daysSince = Math.floor(
+    (Date.now() - new Date(oldest.submittedAt)) / (1000 * 60 * 60 * 24)
+  );
+
+  return (
+    <div className="mb-6 bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-4">
+      <div className="text-2xl mt-0.5">⚠️</div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold text-amber-900">
+          {pending.length} case{pending.length > 1 ? "s" : ""} with OSHA forms pending
+        </p>
+        <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
+          OSHA Forms 300 &amp; 301 must be completed within <strong>7 calendar days</strong> of a recordable incident.
+          {daysSince > 7 && ` Oldest pending case is ${daysSince} days old.`}
+        </p>
+        <div className="flex flex-wrap gap-2 mt-3">
+          {pending.slice(0, 4).map((c) => (
+            <Link
+              key={c.id}
+              to={`/admin/cases/${c.id}`}
+              className="text-xs font-semibold px-2.5 py-1 bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200 transition-colors"
+            >
+              {c.id}
+            </Link>
+          ))}
+          {pending.length > 4 && (
+            <span className="text-xs text-amber-600 py-1">+{pending.length - 4} more</span>
+          )}
+        </div>
+      </div>
+      <Link
+        to="/admin/cases"
+        className="shrink-0 text-xs font-semibold text-amber-700 hover:text-amber-900 border border-amber-300 rounded-lg px-3 py-1.5 hover:bg-amber-100 transition-colors whitespace-nowrap"
+      >
+        View all →
+      </Link>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const { cases } = useApp();
   const openCases = cases.filter((c) => c.caseStatus === "Open").length;
@@ -130,6 +184,9 @@ export default function AdminDashboard() {
             View all cases →
           </Link>
         </div>
+
+        {/* OSHA 7-day reminder */}
+        <OshaReminder cases={cases} />
 
         {/* KPI row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
