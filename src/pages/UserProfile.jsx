@@ -85,10 +85,15 @@ export default function UserProfile() {
     ? cases.filter((c) => c.reviewStatus === "Pending").length
     : 0;
 
-  // Recent activity — latest 4
   const recent = [...myCases]
-    .sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))
-    .slice(0, 4);
+    .sort((a, b) => {
+      const aTrail = a.auditTrail || [];
+      const bTrail = b.auditTrail || [];
+      const aLast = aTrail.length ? aTrail[aTrail.length - 1].at : a.submittedAt;
+      const bLast = bTrail.length ? bTrail[bTrail.length - 1].at : b.submittedAt;
+      return new Date(bLast) - new Date(aLast);
+    })
+    .slice(0, 5);
 
   const initials = user.name.split(" ").map((w) => w[0]).join("");
 
@@ -305,7 +310,7 @@ export default function UserProfile() {
                 </div>
               )}
 
-              {myCases.length > 4 && (
+              {myCases.length > 5 && (
                 <div className="px-6 py-3 border-t border-slate-50">
                   <Link
                     to={isAdmin ? "/admin/cases" : "/portal"}
