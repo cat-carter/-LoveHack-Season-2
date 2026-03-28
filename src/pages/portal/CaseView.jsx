@@ -10,6 +10,7 @@ export default function CaseView() {
   const { cases, dismissNote } = useApp();
   const c = cases.find((x) => x.id === id);
   const pendingNotes = (c?.notes || []).filter((n) => n.requiresAction && !n.dismissed);
+  const allNotes = (c?.notes || []).filter((n) => !n.requiresAction);
 
   if (!c) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -140,6 +141,24 @@ export default function CaseView() {
                     <p className="text-xs text-slate-400 mt-0.5">
                       {entry.by} · {new Date(entry.at).toLocaleString()}
                     </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Notes from administrator */}
+        {allNotes.length > 0 && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 mt-6">
+            <h2 className="text-sm font-semibold text-slate-700 mb-4">Notes from your administrator</h2>
+            <div className="space-y-3">
+              {[...allNotes].reverse().map((n) => (
+                <div key={n.id} className="flex gap-3 py-2.5 border-b border-slate-50 last:border-0">
+                  <div className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-2 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-slate-700">{n.text}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{n.by} · {new Date(n.at).toLocaleString()}</p>
                   </div>
                 </div>
               ))}

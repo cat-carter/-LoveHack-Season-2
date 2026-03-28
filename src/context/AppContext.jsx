@@ -81,16 +81,25 @@ export function AppProvider({ children }) {
     setCases((prev) =>
       prev.map((c) => {
         if (c.id !== caseId) return c;
+        const now = new Date().toISOString();
         const note = {
           id: Date.now(),
           text,
           by: user?.name || "Admin",
-          at: new Date().toISOString(),
+          at: now,
           requiresAction,
+        };
+        const auditEntry = {
+          action: requiresAction
+            ? `Action requested: "${text.slice(0, 80)}${text.length > 80 ? "…" : ""}"`
+            : `Note added: "${text.slice(0, 80)}${text.length > 80 ? "…" : ""}"`,
+          by: user?.name || "Admin",
+          at: now,
         };
         return {
           ...c,
           notes: [...(c.notes || []), note],
+          auditTrail: [...(c.auditTrail || []), auditEntry],
         };
       })
     );
