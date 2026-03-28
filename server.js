@@ -332,5 +332,15 @@ Respond with only this JSON object, no other text:
   }
 });
 
-const PORT = 3001;
-app.listen(PORT, () => console.log(`SafeReport AI server running on :${PORT}`));
+// ─── Serve built frontend in production ────────────────────────────────────
+import { existsSync } from "fs";
+const distPath = join(__dirname, "dist");
+if (existsSync(distPath)) {
+  app.use(express.static(distPath));
+  app.get("*", (req, res) => {
+    res.sendFile(join(distPath, "index.html"));
+  });
+}
+
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => console.log(`IncidentIQ server running on :${PORT}`));
