@@ -56,7 +56,7 @@ export default function CaseDetail() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ type: "reviewer_assigned", caseData: { ...c, reviewer: reviewerVal } }),
-    }).catch(() => {});
+    }).catch((err) => console.error("Notify failed:", err));
   }
 
   function handleMarkReviewed() {
@@ -66,7 +66,7 @@ export default function CaseDetail() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ type: "case_reviewed", caseData: c }),
-    }).catch(() => {});
+    }).catch((err) => console.error("Notify failed:", err));
   }
 
   function handleCloseCase() {

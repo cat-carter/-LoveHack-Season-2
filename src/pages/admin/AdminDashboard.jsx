@@ -8,7 +8,7 @@ import StatusBadge from "../../components/StatusBadge";
 import TrendNarrative from "../../components/TrendNarrative";
 import AISafetyAssistant from "../../components/AISafetyAssistant";
 import { Link } from "react-router-dom";
-import { AlertTriangle, TrendingUp, Clock, ArrowUpRight } from "lucide-react";
+import { AlertTriangle, TrendingUp, Clock, ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 const NAVY = "#0f2d52";
 const COLORS = ["#0f2d52", "#1e6091", "#0d9488", "#f59e0b", "#94a3b8"];
@@ -85,7 +85,7 @@ function KpiCard({ label, value, sub, trend, accentColor = NAVY, urgent }) {
         <span className={`text-4xl font-black ${urgent ? "text-amber-700" : "text-slate-800"}`}>{value}</span>
         {trend !== undefined && (
           <span className={`text-xs font-semibold mb-1.5 px-2 py-0.5 rounded-full ${trendUp ? "bg-rose-50 text-rose-600" : "bg-teal-50 text-teal-700"}`}>
-            {trendUp ? <ArrowUpRight size={10} className="inline mr-0.5" aria-label="up" /> : "↓"}{Math.abs(trend)}%
+            {trendUp ? <ArrowUpRight size={10} className="inline mr-0.5" aria-hidden="true" /> : <ArrowDownRight size={10} className="inline mr-0.5" aria-hidden="true" />}{Math.abs(trend)}%
           </span>
         )}
       </div>
