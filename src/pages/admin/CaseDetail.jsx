@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 import StatusBadge from "../../components/StatusBadge";
-import { Printer, Bot, Sparkles, AlertTriangle } from "lucide-react";
+import { Printer, Bot, Sparkles, AlertTriangle, Mail, CheckCircle } from "lucide-react";
 
 function Section({ title, children }) {
   return (
@@ -33,6 +33,8 @@ export default function CaseDetail() {
   const [noteRequiresAction, setNoteRequiresAction] = useState(false);
   const [noteSaved, setNoteSaved] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null); // "close" | "reviewed" | null
+  const [notifySending, setNotifySending] = useState(false);
+  const [notifySent, setNotifySent] = useState(false);
 
   if (!c) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -84,9 +86,36 @@ export default function CaseDetail() {
     setTimeout(() => setNoteSaved(false), 2500);
   }
 
+  const employeeEmail = c.employeeName
+    ? c.employeeName.toLowerCase().split(" ").slice(0, 2).map((w, i) => i === 0 ? w[0] : w).join(".") + "@sunrisenursing.org"
+    : "employee@sunrisenursing.org";
+
+  function handleSendNotification() {
+    setNotifySending(true);
+    setTimeout(() => {
+      setNotifySending(false);
+      setNotifySent(true);
+      updateCase(c.id, {}, `Email notification sent to ${employeeEmail}`);
+      setTimeout(() => setNotifySent(false), 5000);
+    }, 900);
+  }
+
+  const notificationHistory = (c.auditTrail || []).filter((e) => e.action?.startsWith("Email notification sent"));
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+
+        {/* Print header — visible only when printing */}
+        <div className="print-header hidden">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-lg font-bold" style={{ color: "#0f2d52" }}>IncidentIQ — Incident Report</p>
+              <p className="text-sm text-slate-500">Sunrise Nursing &amp; Rehabilitation · Printed {new Date().toLocaleDateString()}</p>
+            </div>
+            <p className="text-2xl font-black" style={{ color: "#0f2d52" }}>{c.id}</p>
+          </div>
+        </div>
 
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
@@ -390,6 +419,55 @@ export default function CaseDetail() {
               </button>
             </div>
           </div>
+        </Section>
+
+        {/* Employee Notifications */}
+        <Section title="Employee Notifications">
+          <div className="flex items-start gap-3 mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
+            <Mail size={15} className="text-slate-400 mt-0.5 shrink-0" aria-hidden="true" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-0.5">Notify employee</p>
+              <p className="text-sm text-slate-600">{employeeEmail}</p>
+              <p className="text-xs text-slate-400 mt-0.5">Notifications are sent automatically on reviewer assignment and status changes. Use the button below to send a manual case update.</p>
+            </div>
+            <button
+              onClick={handleSendNotification}
+              disabled={notifySending || notifySent}
+              className="shrink-0 flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-teal-50 hover:border-teal-200 hover:text-teal-700 disabled:opacity-60 transition-colors"
+            >
+              {notifySending ? (
+                <><span className="inline-block w-3 h-3 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" /> Sending…</>
+              ) : notifySent ? (
+                <><CheckCircle size={13} className="text-teal-600" aria-hidden="true" /> Sent!</>
+              ) : (
+                <><Mail size={13} aria-hidden="true" /> Send Update</>
+              )}
+            </button>
+          </div>
+
+          {notifySent && (
+            <div className="flex items-center gap-2 text-sm text-teal-700 bg-teal-50 border border-teal-100 rounded-xl px-4 py-3 mb-4">
+              <CheckCircle size={15} aria-hidden="true" className="shrink-0" />
+              <span>
+                Case update email sent to <strong>{employeeEmail}</strong> — {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            </div>
+          )}
+
+          {notificationHistory.length > 0 ? (
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Notification history</p>
+              {[...notificationHistory].reverse().map((e, i) => (
+                <div key={i} className="flex items-center gap-2 text-xs text-slate-500 py-1.5 border-b border-slate-50 last:border-0">
+                  <Mail size={12} className="text-slate-300 shrink-0" aria-hidden="true" />
+                  <span className="flex-1">{e.action}</span>
+                  <span className="text-slate-400 shrink-0">{new Date(e.at).toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-slate-400 italic">No notifications sent yet.</p>
+          )}
         </Section>
 
         {/* Audit Trail */}

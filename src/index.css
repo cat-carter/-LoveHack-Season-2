@@ -37,9 +37,13 @@ body {
 
 /* ─── Print styles ──────────────────────────────────────────── */
 @media print {
-  /* Hide chrome */
+  /* Hide interactive chrome */
   nav,
-  .print\:hidden { display: none !important; }
+  .print\:hidden,
+  button,
+  select,
+  textarea,
+  input { display: none !important; }
 
   /* Reset backgrounds for ink savings */
   body { background: white !important; }
@@ -65,12 +69,17 @@ body {
     margin-bottom: 20px;
   }
 
-  /* Flatten shadows and borders */
+  /* Flatten shadows */
   .shadow-md,
   .shadow-sm { box-shadow: none !important; }
 
-  /* Keep teal/navy accent colors */
+  /* Keep accent colors */
   .text-teal-600 { color: #0d9488 !important; }
   .bg-teal-50 { background: #f0fdfa !important; }
   .bg-slate-50 { background: #f8fafc !important; }
+
+  /* Compact spacing for print */
+  .py-8 { padding-top: 0 !important; }
+  .mb-6 { margin-bottom: 12px !important; }
+  .mb-4 { margin-bottom: 8px !important; }
 }
