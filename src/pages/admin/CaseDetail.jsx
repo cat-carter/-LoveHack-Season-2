@@ -98,7 +98,7 @@ export default function CaseDetail() {
           <div className="flex items-start gap-3">
             <button
               onClick={() => window.print()}
-              className="print:hidden flex items-center gap-1.5 text-sm font-medium text-slate-500 border border-slate-200 rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+              className="print:hidden flex items-center gap-1.5 text-sm font-medium text-slate-500 border border-slate-200 rounded-lg px-3 py-1.5 hover:bg-slate-100 transition-colors"
             >
               <Printer size={14} aria-hidden="true" /> Print / PDF
             </button>
@@ -113,7 +113,7 @@ export default function CaseDetail() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {[
             { label: "Workers Comp", status: c.workersCompStatus },
-            { label: "OSHA 300", status: c.osha300Status },
+            { label: "OSHA Log", status: c.osha300Status },
             { label: "OSHA 301", status: c.osha301Status },
             { label: "Employee Status", status: c.employeeStatus },
           ].map(({ label, status }) => (
@@ -227,10 +227,10 @@ export default function CaseDetail() {
         </Section>
 
         {/* OSHA 300 link */}
-        <Section title="OSHA 300 — Log of Work-Related Injuries">
-          <p className="text-sm text-slate-500 mb-3">This case contributes to the facility OSHA 300 log. View the full log across all records.</p>
+        <Section title="OSHA Log — Log of Work-Related Injuries">
+          <p className="text-sm text-slate-500 mb-3">This case contributes to the facility OSHA Log. View the full log across all records.</p>
           <Link to="/admin/osha300" className="inline-block bg-teal-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors">
-            View OSHA 300 Log →
+            View OSHA Log →
           </Link>
         </Section>
 

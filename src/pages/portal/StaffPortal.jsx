@@ -11,8 +11,14 @@ export default function StaffPortal() {
   const openCount = myCases.filter((c) => c.caseStatus === "Open").length;
 
   const recent = [...myCases]
-    .sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))
-    .slice(0, 4);
+    .sort((a, b) => {
+      const aTrail = a.auditTrail || [];
+      const bTrail = b.auditTrail || [];
+      const aLast = aTrail.length ? aTrail[aTrail.length - 1].at : a.submittedAt;
+      const bLast = bTrail.length ? bTrail[bTrail.length - 1].at : b.submittedAt;
+      return new Date(bLast) - new Date(aLast);
+    })
+    .slice(0, 5);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -113,7 +119,7 @@ export default function StaffPortal() {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400">Recent Activity</h2>
-            {myCases.length > 4 && (
+            {myCases.length > 5 && (
               <Link to="/portal/reports" className="text-xs font-semibold hover:underline" style={{ color: NAVY }}>
                 View all {myCases.length} reports →
               </Link>
@@ -151,7 +157,7 @@ export default function StaffPortal() {
                   </div>
                 </Link>
               ))}
-              {myCases.length > 4 && (
+              {myCases.length > 5 && (
                 <Link
                   to="/portal/reports"
                   className="block text-center py-3 text-xs font-semibold rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors"

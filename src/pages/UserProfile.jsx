@@ -146,7 +146,7 @@ export default function UserProfile() {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Contact</p>
-                {!isAdmin && !editing && (
+                {!editing && (
                   <button
                     onClick={handleStartEdit}
                     className="text-xs font-semibold text-teal-600 hover:text-teal-800 border border-teal-200 rounded-lg px-3 py-1 transition-colors"
@@ -163,7 +163,7 @@ export default function UserProfile() {
                 {/* Email */}
                 <div className="flex items-center gap-3">
                   <span className="text-slate-400 text-sm w-4 shrink-0">✉</span>
-                  {!isAdmin && editing ? (
+                  {editing ? (
                     <input
                       className="flex-1 text-sm border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-400"
                       value={editEmail}
@@ -176,7 +176,7 @@ export default function UserProfile() {
                 {/* Phone */}
                 <div className="flex items-center gap-3">
                   <span className="text-slate-400 text-sm w-4 shrink-0">☎</span>
-                  {!isAdmin && editing ? (
+                  {editing ? (
                     <input
                       className="flex-1 text-sm border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-400"
                       value={editPhone}
@@ -195,7 +195,7 @@ export default function UserProfile() {
                   <div key={label} className="flex items-center gap-3">
                     <span className="text-slate-400 text-sm w-4 shrink-0">{icon}</span>
                     <span className="text-sm text-slate-500">{label}</span>
-                    {!isAdmin && editing && (
+                    {editing && (
                       <svg className="ml-auto w-3.5 h-3.5 text-slate-300 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
                       </svg>
@@ -205,7 +205,7 @@ export default function UserProfile() {
               </div>
 
               {/* Edit mode actions */}
-              {!isAdmin && editing && (
+              {editing && (
                 <div className="flex gap-2 mt-4">
                   <button
                     onClick={handleSaveProfile}

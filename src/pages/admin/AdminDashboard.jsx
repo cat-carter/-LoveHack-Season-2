@@ -171,7 +171,15 @@ export default function AdminDashboard() {
   const onLeaveList = cases.filter((c) => c.employeeStatus === "On Leave");
   const onLeave = onLeaveList.length;
 
-  const recent = cases.slice(0, 5);
+  const recent = [...cases]
+    .sort((a, b) => {
+      const aTrail = a.auditTrail || [];
+      const bTrail = b.auditTrail || [];
+      const aLast = aTrail.length ? aTrail[aTrail.length - 1].at : a.submittedAt;
+      const bLast = bTrail.length ? bTrail[bTrail.length - 1].at : b.submittedAt;
+      return new Date(bLast) - new Date(aLast);
+    })
+    .slice(0, 5);
 
   // Derive injury type breakdown from live cases
   const injuryTypeData = useMemo(() => {
@@ -240,7 +248,7 @@ export default function AdminDashboard() {
             <h1 className="text-2xl font-bold text-slate-800">Safety Dashboard</h1>
             <p className="text-sm text-slate-500 mt-1">Sunrise Nursing & Rehabilitation · {currentMonthYear}</p>
           </div>
-          <Link to="/admin/cases" className="text-xs font-semibold px-4 py-2 rounded-lg border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-sm">
+          <Link to="/admin/cases" className="text-xs font-semibold px-4 py-2 rounded-lg border border-slate-200 text-slate-600 bg-white hover:bg-slate-100 transition-colors shadow-sm">
             View all cases →
           </Link>
         </div>

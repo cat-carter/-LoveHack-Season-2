@@ -116,7 +116,7 @@ export default function Navbar() {
     ? [
         { to: "/admin", label: "Dashboard" },
         { to: "/admin/cases", label: "Cases" },
-        { to: "/admin/osha300", label: "OSHA 300" },
+        { to: "/admin/osha300", label: "OSHA Log" },
       ]
     : [
         { to: "/portal", label: "Home" },
