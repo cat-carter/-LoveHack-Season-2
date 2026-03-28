@@ -1,13 +1,29 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { mockCases, mockUsers } from "../data/mockData";
 import { mockReviewers } from "../data/mockData";
+
+function readStorage(key, fallback) {
+  try {
+    const s = localStorage.getItem(key);
+    return s ? JSON.parse(s) : fallback;
+  } catch {
+    return fallback;
+  }
+}
 
 const AppContext = createContext();
 
 export function AppProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [cases, setCases] = useState(mockCases);
-  const [drafts, setDrafts] = useState([]);
+  const [user, setUser] = useState(() => readStorage("iq_user", null));
+  const [cases, setCases] = useState(() => readStorage("iq_cases", mockCases));
+  const [drafts, setDrafts] = useState(() => readStorage("iq_drafts", []));
+
+  useEffect(() => { localStorage.setItem("iq_cases", JSON.stringify(cases)); }, [cases]);
+  useEffect(() => { localStorage.setItem("iq_drafts", JSON.stringify(drafts)); }, [drafts]);
+  useEffect(() => {
+    if (user) localStorage.setItem("iq_user", JSON.stringify(user));
+    else localStorage.removeItem("iq_user");
+  }, [user]);
 
   function login(role) {
     const found = mockUsers.find((u) => u.role === role);

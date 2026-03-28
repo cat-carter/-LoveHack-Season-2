@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, BarChart, Bar, LabelList,
@@ -72,14 +72,10 @@ function ChartTooltip({ active, payload, label }) {
 }
 
 // ── KPI card ────────────────────────────────────────────────────────────────
-function KpiCard({ label, value, sub, trend, accentColor = NAVY, urgent }) {
+function KpiCard({ label, value, sub, trend, accentColor = NAVY, urgent, to, onClick }) {
   const trendUp = trend > 0;
-  return (
-    <div className={`rounded-2xl p-5 shadow-sm flex flex-col gap-2 hover:shadow-md transition-shadow ${
-      urgent
-        ? "bg-amber-50 border-2 border-amber-300"
-        : "bg-white border border-slate-100"
-    }`}>
+  const inner = (
+    <>
       <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest">{label}</span>
       <div className="flex items-end gap-3">
         <span className={`text-4xl font-black ${urgent ? "text-amber-700" : "text-slate-800"}`}>{value}</span>
@@ -91,8 +87,14 @@ function KpiCard({ label, value, sub, trend, accentColor = NAVY, urgent }) {
       </div>
       {sub && <p className="text-xs text-slate-500">{sub}</p>}
       <div className="h-0.5 w-12 rounded-full mt-1" style={{ background: urgent ? "#d97706" : accentColor }} />
-    </div>
+    </>
   );
+  const cls = `rounded-2xl p-5 shadow-sm flex flex-col gap-2 hover:shadow-md transition-shadow text-left w-full ${
+    urgent ? "bg-amber-50 border-2 border-amber-300" : "bg-white border border-slate-100"
+  }`;
+  if (to) return <Link to={to} className={cls}>{inner}</Link>;
+  if (onClick) return <button onClick={onClick} className={cls}>{inner}</button>;
+  return <div className={cls}>{inner}</div>;
 }
 
 // ── Donut center label (absolute overlay — always truly centered) ─────────────
@@ -163,9 +165,11 @@ function OshaReminder({ cases }) {
 
 export default function AdminDashboard() {
   const { cases } = useApp();
+  const [showLeavePanel, setShowLeavePanel] = useState(false);
   const openCases = cases.filter((c) => c.caseStatus === "Open").length;
   const pendingReview = cases.filter((c) => c.reviewStatus === "Pending").length;
-  const onLeave = cases.filter((c) => c.employeeStatus === "On Leave").length;
+  const onLeaveList = cases.filter((c) => c.employeeStatus === "On Leave");
+  const onLeave = onLeaveList.length;
 
   const recent = cases.slice(0, 5);
 
@@ -246,11 +250,48 @@ export default function AdminDashboard() {
 
         {/* KPI row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <KpiCard label="Total Cases" value={cases.length} sub="All time" accentColor={NAVY} />
-          <KpiCard label="Open Cases" value={openCases} sub="Require resolution" accentColor="#f59e0b" urgent={openCases > 0} />
-          <KpiCard label="Pending Review" value={pendingReview} sub="Awaiting admin action" accentColor="#1e6091" />
-          <KpiCard label="Staff on Leave" value={onLeave} sub="Work-related injury" trend={0} accentColor="#f43f5e" />
+          <KpiCard label="Total Cases" value={cases.length} sub="All time" accentColor={NAVY} to="/admin/cases" />
+          <KpiCard label="Open Cases" value={openCases} sub="Require resolution" accentColor="#f59e0b" urgent={openCases > 0} to="/admin/cases?filter=open" />
+          <KpiCard label="Pending Review" value={pendingReview} sub="Awaiting admin action" accentColor="#1e6091" to="/admin/cases?filter=pending" />
+          <KpiCard label="Staff on Leave" value={onLeave} sub="Work-related injury" accentColor="#f43f5e" onClick={() => setShowLeavePanel(true)} />
         </div>
+
+        {/* Staff on Leave slide-over panel */}
+        {showLeavePanel && (
+          <div className="fixed inset-0 z-50 flex justify-end">
+            <div className="absolute inset-0 bg-black/30" onClick={() => setShowLeavePanel(false)} />
+            <div className="relative w-full max-w-sm bg-white shadow-2xl flex flex-col">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-0.5">Current</p>
+                  <h2 className="text-base font-bold text-slate-800">Staff on Leave</h2>
+                </div>
+                <button onClick={() => setShowLeavePanel(false)} className="text-slate-400 hover:text-slate-700 transition-colors text-xl leading-none">×</button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-6 space-y-3">
+                {onLeaveList.length === 0 ? (
+                  <p className="text-sm text-slate-400 italic">No staff currently on leave.</p>
+                ) : (
+                  onLeaveList.map((c) => (
+                    <Link
+                      key={c.id}
+                      to={`/admin/cases/${c.id}`}
+                      onClick={() => setShowLeavePanel(false)}
+                      className="block bg-slate-50 border border-slate-200 rounded-xl p-4 hover:bg-slate-100 transition-colors"
+                    >
+                      <p className="text-sm font-semibold text-slate-800">{c.employeeName}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{c.position} · {c.incidentDate}</p>
+                      <p className="text-xs text-slate-400 mt-1">{c.id} · {c.injuryType}</p>
+                      {c.expectedReturn && (
+                        <p className="text-xs text-teal-600 mt-1 font-medium">Returns {c.expectedReturn}</p>
+                      )}
+                    </Link>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* AI Briefing */}
         <div className="mb-8">

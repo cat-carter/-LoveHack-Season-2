@@ -1,9 +1,20 @@
 import { useApp } from "../../context/AppContext";
 import { Link } from "react-router-dom";
 
+function calcDaysAway(incidentDate) {
+  if (!incidentDate) return { count: 0, returnDate: null };
+  const incident = new Date(incidentDate).getTime();
+  const returnMs = incident + 7 * 24 * 60 * 60 * 1000;
+  const today = Date.now();
+  const count = today >= returnMs ? 7 : Math.max(0, Math.ceil((today - incident) / (1000 * 60 * 60 * 24)));
+  const returnDate = new Date(returnMs).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return { count, returnDate };
+}
+
 export default function OSHA300() {
   const { cases } = useApp();
   const recordable = cases.filter((c) => c.triage?.oshaRecordable === true);
+  const currentYear = new Date().getFullYear();
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -11,7 +22,7 @@ export default function OSHA300() {
         <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-2xl font-semibold text-slate-800">OSHA 300 Log</h1>
-            <p className="text-sm text-slate-500 mt-1">Log of Work-Related Injuries and Illnesses · Year: 2025</p>
+            <p className="text-sm text-slate-500 mt-1">Log of Work-Related Injuries and Illnesses · Year: {currentYear}</p>
           </div>
           <Link to="/admin" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">← Dashboard</Link>
         </div>
@@ -48,7 +59,15 @@ export default function OSHA300() {
                   <td className="px-4 py-3 text-slate-600 max-w-xs truncate">{c.injuryDescription}</td>
                   <td className="px-4 py-3 text-slate-600">{c.injuryType}</td>
                   <td className="px-4 py-3 text-center text-slate-700">
-                    {c.employeeStatus === "On Leave" ? "TBD" : "0"}
+                    {(() => {
+                      const { count, returnDate } = calcDaysAway(c.incidentDate);
+                      return (
+                        <div>
+                          <span className="font-semibold">{count}</span>
+                          {returnDate && <p className="text-[10px] text-slate-400 mt-0.5">Est. return {returnDate}</p>}
+                        </div>
+                      );
+                    })()}
                   </td>
                   <td className="px-4 py-3 text-slate-500">{c.osha300Status}</td>
                 </tr>
