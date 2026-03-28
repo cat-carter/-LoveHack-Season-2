@@ -119,7 +119,12 @@ export default function MyReports() {
                     <p className="text-sm font-semibold text-slate-700">Draft — {d.incidentDate || "No date"}</p>
                     <p className="text-xs text-slate-400 mt-0.5">Saved {new Date(d.savedAt).toLocaleString()}</p>
                   </div>
-                  <Link to="/portal/report/new" className="text-xs font-semibold hover:underline" style={{ color: NAVY }}>
+                  <Link
+                    to={d.injuryType === "Near Miss"
+                      ? `/portal/near-miss/new?draft=${encodeURIComponent(d.draftId)}`
+                      : `/portal/report/new?draft=${encodeURIComponent(d.draftId)}`}
+                    className="text-xs font-semibold hover:underline" style={{ color: NAVY }}
+                  >
                     Continue →
                   </Link>
                 </div>

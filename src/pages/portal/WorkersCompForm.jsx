@@ -41,7 +41,7 @@ const ta = `${inp} resize-none`;
 
 export default function WorkersCompForm() {
   const { caseId } = useParams();
-  const { cases, user } = useApp();
+  const { cases, user, updateCase } = useApp();
   const navigate = useNavigate();
   const sourceCase = cases.find((c) => c.id === caseId);
 
@@ -88,6 +88,9 @@ export default function WorkersCompForm() {
   }
 
   function handleSubmit() {
+    if (caseId) {
+      updateCase(caseId, { workersCompStatus: "Completed" }, "Workers' Comp form submitted");
+    }
     setSubmitted(true);
   }
 

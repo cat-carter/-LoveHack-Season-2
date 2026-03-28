@@ -22,7 +22,7 @@ export function AppProvider({ children }) {
     const now = new Date().toISOString();
     const newCase = {
       ...formData,
-      id: `CASE-2025-${String(cases.length + 1).padStart(3, "0")}`,
+      id: `CASE-${new Date().getFullYear()}-${String(cases.length + 1).padStart(3, "0")}`,
       submittedBy: user?.name || "Unknown",
       submittedAt: now,
       reviewStatus: "Pending",
@@ -113,12 +113,10 @@ export function AppProvider({ children }) {
   }
 
   function saveDraft(formData) {
-    const draft = {
-      ...formData,
-      draftId: `DRAFT-${Date.now()}`,
-      savedAt: new Date().toISOString(),
-    };
-    setDrafts((prev) => [...prev.filter((d) => d.draftId !== draft.draftId), draft]);
+    // Stable ID per user+form-type so repeated saves replace, not accumulate
+    const draftId = `DRAFT-${user?.name || "unknown"}-${formData.injuryType || "incident"}`;
+    const draft = { ...formData, draftId, savedAt: new Date().toISOString() };
+    setDrafts((prev) => [...prev.filter((d) => d.draftId !== draftId), draft]);
     return draft;
   }
 

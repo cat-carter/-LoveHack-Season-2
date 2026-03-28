@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 export default function OSHA300() {
   const { cases } = useApp();
-  const recordable = cases.filter((c) => c.osha300Status !== "Not Recordable");
+  const recordable = cases.filter((c) => c.triage?.oshaRecordable === true);
 
   return (
     <div className="min-h-screen bg-slate-50">

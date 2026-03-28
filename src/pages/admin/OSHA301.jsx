@@ -40,19 +40,17 @@ function NarrativeField({ label, questionNum, value, onChange, aiDrafted }) {
 
 export default function OSHA301() {
   const { id } = useParams();
-  const { cases } = useApp();
+  const { cases, updateCase } = useApp();
   const c = cases.find((x) => x.id === id);
 
   const [generating, setGenerating] = useState(false);
   const [generated, setGenerated] = useState(false);
   const [genError, setGenError] = useState(null);
+  const [saved, setSaved] = useState(false);
 
-  const [narratives, setNarratives] = useState({
-    q1: "",
-    q2: "",
-    q3: "",
-    q4: "",
-  });
+  const [narratives, setNarratives] = useState(
+    c?.osha301Narratives || { q1: "", q2: "", q3: "", q4: "" }
+  );
 
   if (!c) {
     return (
@@ -63,6 +61,12 @@ export default function OSHA301() {
         </div>
       </div>
     );
+  }
+
+  function handleSave() {
+    updateCase(id, { osha301Status: "Completed", osha301Narratives: narratives }, "OSHA 301 completed");
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
   }
 
   async function generateNarratives() {
@@ -136,6 +140,12 @@ export default function OSHA301() {
               {generating ? "Regenerating…" : <><RefreshCw size={11} aria-hidden="true" /> Regenerate</>}
             </button>
           )}
+          <button
+            onClick={handleSave}
+            className="flex items-center gap-1.5 px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-lg hover:bg-slate-900 transition-colors"
+          >
+            {saved ? "✓ Saved" : "Save & Complete"}
+          </button>
           <button
             onClick={() => window.print()}
             className="flex items-center gap-1.5 px-4 py-2 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors"

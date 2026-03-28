@@ -1,5 +1,5 @@
 import { useState, Children, cloneElement, isValidElement } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 import { Sparkles } from "lucide-react";
 
@@ -132,37 +132,73 @@ const selectCls = inputCls;
 const textareaCls = `${inputCls} resize-none`;
 
 export default function IncidentForm() {
-  const { submitCase, saveDraft, user } = useApp();
+  const { submitCase, saveDraft, user, drafts } = useApp();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [step, setStep] = useState(0);
   const [saved, setSaved] = useState(false);
 
+  const draftKey = searchParams.get("draft");
+  const draftData = draftKey ? drafts.find((d) => d.draftId === draftKey) : null;
+
   const [form, setForm] = useState({
-    employeeName: user?.name || "",
-    managerName: user?.manager || "",
-    shift: "",
-    position: user?.position || "",
-    employeeAddress: user?.address || "",
-    employeeCityStateZip: user ? `${user.city || ""}, ${user.state || ""} ${user.zip || ""}`.trim().replace(/^,\s*/, "") : "",
-    dateOfBirth: user?.dateOfBirth || "",
-    dateHired: user?.dateHired || "",
-    gender: user?.gender || "",
-    incidentDate: "",
-    incidentTime: "",
-    incidentLocation: "",
-    injuryType: "",
-    injuryDescription: "",
-    symptoms: "",
-    medicalEvaluation: "",
-    medicalDiagnosis: "",
+    employeeName: draftData?.employeeName ?? user?.name ?? "",
+    managerName: draftData?.managerName ?? user?.manager ?? "",
+    shift: draftData?.shift ?? "",
+    position: draftData?.position ?? user?.position ?? "",
+    employeeAddress: draftData?.employeeAddress ?? user?.address ?? "",
+    employeeCityStateZip: draftData?.employeeCityStateZip ?? (user ? `${user.city || ""}, ${user.state || ""} ${user.zip || ""}`.trim().replace(/^,\s*/, "") : ""),
+    dateOfBirth: draftData?.dateOfBirth ?? user?.dateOfBirth ?? "",
+    dateHired: draftData?.dateHired ?? user?.dateHired ?? "",
+    gender: draftData?.gender ?? user?.gender ?? "",
+    incidentDate: draftData?.incidentDate ?? "",
+    incidentTime: draftData?.incidentTime ?? "",
+    incidentLocation: draftData?.incidentLocation ?? "",
+    injuryType: draftData?.injuryType ?? "",
+    injuryDescription: draftData?.injuryDescription ?? "",
+    symptoms: draftData?.symptoms ?? "",
+    medicalEvaluation: draftData?.medicalEvaluation ?? "",
+    medicalDiagnosis: draftData?.medicalDiagnosis ?? "",
   });
+
+  const [stepErrors, setStepErrors] = useState([]);
 
   function update(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
-  function handleNext() { setStep((s) => Math.min(s + 1, STEPS.length - 1)); }
-  function handleBack() { setStep((s) => Math.max(s - 1, 0)); }
+  function validateStep(s) {
+    if (s === 0) {
+      const missing = [];
+      if (!form.employeeName.trim()) missing.push("Employee Name");
+      if (!form.managerName.trim()) missing.push("Manager Name");
+      if (!form.shift) missing.push("Shift");
+      if (!form.position.trim()) missing.push("Position");
+      if (!form.incidentDate) missing.push("Event Date");
+      if (!form.incidentTime) missing.push("Event Time");
+      if (!form.incidentLocation.trim()) missing.push("Incident Location");
+      return missing;
+    }
+    if (s === 1) {
+      const missing = [];
+      if (!form.injuryType) missing.push("Incident / Injury Type");
+      if (!form.injuryDescription.trim()) missing.push("Incident Description");
+      if (form.injuryType !== "Property Damage" && !form.symptoms.trim()) missing.push("Medical Symptoms");
+      return missing;
+    }
+    if (s === 2) {
+      if (!form.medicalEvaluation) return ["Medical Evaluation (Yes or No)"];
+    }
+    return [];
+  }
+
+  function handleNext() {
+    const missing = validateStep(step);
+    if (missing.length > 0) { setStepErrors(missing); return; }
+    setStepErrors([]);
+    setStep((s) => Math.min(s + 1, STEPS.length - 1));
+  }
+  function handleBack() { setStepErrors([]); setStep((s) => Math.max(s - 1, 0)); }
 
   function handleSaveDraft() {
     saveDraft(form);
@@ -171,6 +207,11 @@ export default function IncidentForm() {
   }
 
   function handleSubmit() {
+    // Validate all steps before final submit (catches edge cases)
+    for (let s = 0; s < STEPS.length - 1; s++) {
+      const missing = validateStep(s);
+      if (missing.length > 0) { setStepErrors(missing); setStep(s); return; }
+    }
     const newCase = submitCase({ ...form, medicalEvaluation: form.medicalEvaluation === "yes" });
     navigate(`/portal/cases/${newCase.id}?submitted=true`);
   }
@@ -401,6 +442,16 @@ export default function IncidentForm() {
             </>
           )}
         </div>
+
+        {/* Validation errors */}
+        {stepErrors.length > 0 && (
+          <div className="bg-rose-50 border border-rose-200 rounded-xl px-4 py-3 mb-4" role="alert">
+            <p className="text-sm font-medium text-rose-700 mb-1">Please complete the required fields:</p>
+            <ul className="list-disc list-inside space-y-0.5">
+              {stepErrors.map((e) => <li key={e} className="text-xs text-rose-600">{e}</li>)}
+            </ul>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex items-center justify-between gap-3">

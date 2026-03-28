@@ -1,5 +1,5 @@
 import { useState, Children, cloneElement, isValidElement } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 import { AlertTriangle } from "lucide-react";
 
@@ -47,32 +47,65 @@ const selectCls = inputCls;
 const textareaCls = `${inputCls} resize-none`;
 
 export default function NearMissForm() {
-  const { submitCase, saveDraft, user } = useApp();
+  const { submitCase, saveDraft, user, drafts } = useApp();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [step, setStep] = useState(0);
   const [saved, setSaved] = useState(false);
 
+  const draftKey = searchParams.get("draft");
+  const draftData = draftKey ? drafts.find((d) => d.draftId === draftKey) : null;
+
   const [form, setForm] = useState({
-    employeeName: user?.name || "",
-    managerName: user?.manager || "",
-    shift: "",
-    position: user?.position || "",
-    incidentDate: "",
-    incidentTime: "",
-    incidentLocation: "",
-    whatHappened: "",
-    potentialHarm: "",
-    whatStopped: "",
-    witnessPresent: "",
-    witnessName: "",
+    employeeName: draftData?.employeeName ?? user?.name ?? "",
+    managerName: draftData?.managerName ?? user?.manager ?? "",
+    shift: draftData?.shift ?? "",
+    position: draftData?.position ?? user?.position ?? "",
+    incidentDate: draftData?.incidentDate ?? "",
+    incidentTime: draftData?.incidentTime ?? "",
+    incidentLocation: draftData?.incidentLocation ?? "",
+    whatHappened: draftData?.whatHappened ?? "",
+    potentialHarm: draftData?.potentialHarm ?? "",
+    whatStopped: draftData?.whatStopped ?? "",
+    witnessPresent: draftData?.witnessPresent ?? "",
+    witnessName: draftData?.witnessName ?? "",
   });
+
+  const [stepErrors, setStepErrors] = useState([]);
 
   function update(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
-  function handleNext() { setStep((s) => Math.min(s + 1, STEPS.length - 1)); }
-  function handleBack() { setStep((s) => Math.max(s - 1, 0)); }
+  function validateStep(s) {
+    if (s === 0) {
+      const missing = [];
+      if (!form.employeeName.trim()) missing.push("Employee Name");
+      if (!form.managerName.trim()) missing.push("Manager Name");
+      if (!form.shift) missing.push("Shift");
+      if (!form.position.trim()) missing.push("Position");
+      if (!form.incidentDate) missing.push("Date of Event");
+      if (!form.incidentTime) missing.push("Time of Event");
+      if (!form.incidentLocation.trim()) missing.push("Location");
+      return missing;
+    }
+    if (s === 1) {
+      const missing = [];
+      if (!form.whatHappened.trim()) missing.push("What happened / What almost occurred?");
+      if (!form.potentialHarm.trim()) missing.push("What was the potential harm?");
+      if (!form.whatStopped.trim()) missing.push("What stopped the harm from occurring?");
+      return missing;
+    }
+    return [];
+  }
+
+  function handleNext() {
+    const missing = validateStep(step);
+    if (missing.length > 0) { setStepErrors(missing); return; }
+    setStepErrors([]);
+    setStep((s) => Math.min(s + 1, STEPS.length - 1));
+  }
+  function handleBack() { setStepErrors([]); setStep((s) => Math.max(s - 1, 0)); }
 
   function handleSaveDraft() {
     saveDraft({ ...form, injuryType: "Near Miss" });
@@ -81,6 +114,10 @@ export default function NearMissForm() {
   }
 
   function handleSubmit() {
+    for (let s = 0; s < STEPS.length - 1; s++) {
+      const missing = validateStep(s);
+      if (missing.length > 0) { setStepErrors(missing); setStep(s); return; }
+    }
     const newCase = submitCase({
       employeeName: form.employeeName,
       managerName: form.managerName,
@@ -252,6 +289,16 @@ export default function NearMissForm() {
             </>
           )}
         </div>
+
+        {/* Validation errors */}
+        {stepErrors.length > 0 && (
+          <div className="bg-rose-50 border border-rose-200 rounded-xl px-4 py-3 mb-4" role="alert">
+            <p className="text-sm font-medium text-rose-700 mb-1">Please complete the required fields:</p>
+            <ul className="list-disc list-inside space-y-0.5">
+              {stepErrors.map((e) => <li key={e} className="text-xs text-rose-600">{e}</li>)}
+            </ul>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex items-center justify-between gap-3">

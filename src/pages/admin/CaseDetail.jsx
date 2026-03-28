@@ -32,6 +32,7 @@ export default function CaseDetail() {
   const [noteText, setNoteText] = useState("");
   const [noteRequiresAction, setNoteRequiresAction] = useState(false);
   const [noteSaved, setNoteSaved] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null); // "close" | "reviewed" | null
 
   if (!c) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -61,7 +62,7 @@ export default function CaseDetail() {
 
   function handleMarkReviewed() {
     updateCase(c.id, { reviewStatus: "Reviewed" }, "Status updated to Reviewed");
-    // Email notification to employee
+    setConfirmAction(null);
     fetch("/api/notify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -71,6 +72,7 @@ export default function CaseDetail() {
 
   function handleCloseCase() {
     updateCase(c.id, { caseStatus: "Closed" }, "Case closed");
+    setConfirmAction(null);
   }
 
   function handleAddNote() {
@@ -262,20 +264,36 @@ export default function CaseDetail() {
             <div className="flex items-center gap-3">
               <StatusBadge status={c.reviewStatus} />
               {c.reviewStatus !== "Reviewed" && (
-                <button
-                  onClick={handleMarkReviewed}
-                  className="text-xs text-teal-600 hover:text-teal-800 font-medium underline"
-                >
-                  Mark as Reviewed
-                </button>
+                confirmAction === "reviewed" ? (
+                  <span className="inline-flex items-center gap-2 text-xs">
+                    <span className="text-slate-600">Mark as reviewed?</span>
+                    <button onClick={handleMarkReviewed} className="font-semibold text-teal-600 hover:text-teal-800">Confirm</button>
+                    <button onClick={() => setConfirmAction(null)} className="text-slate-400 hover:text-slate-600">Cancel</button>
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => setConfirmAction("reviewed")}
+                    className="text-xs text-teal-600 hover:text-teal-800 font-medium underline"
+                  >
+                    Mark as Reviewed
+                  </button>
+                )
               )}
               {c.caseStatus !== "Closed" && (
-                <button
-                  onClick={handleCloseCase}
-                  className="text-xs text-slate-400 hover:text-slate-700 font-medium underline"
-                >
-                  Close Case
-                </button>
+                confirmAction === "close" ? (
+                  <span className="inline-flex items-center gap-2 text-xs">
+                    <span className="text-slate-600">Close this case?</span>
+                    <button onClick={handleCloseCase} className="font-semibold text-rose-600 hover:text-rose-800">Confirm</button>
+                    <button onClick={() => setConfirmAction(null)} className="text-slate-400 hover:text-slate-600">Cancel</button>
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => setConfirmAction("close")}
+                    className="text-xs text-slate-400 hover:text-slate-700 font-medium underline"
+                  >
+                    Close Case
+                  </button>
+                )
               )}
             </div>
           </div>

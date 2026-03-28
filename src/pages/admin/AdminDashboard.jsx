@@ -1,9 +1,9 @@
+import { useMemo } from "react";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, BarChart, Bar, LabelList,
 } from "recharts";
 import { useApp } from "../../context/AppContext";
-import { injuryTypeData, incidentsOverTime, shiftData } from "../../data/mockData";
 import StatusBadge from "../../components/StatusBadge";
 import TrendNarrative from "../../components/TrendNarrative";
 import AISafetyAssistant from "../../components/AISafetyAssistant";
@@ -166,9 +166,60 @@ export default function AdminDashboard() {
   const openCases = cases.filter((c) => c.caseStatus === "Open").length;
   const pendingReview = cases.filter((c) => c.reviewStatus === "Pending").length;
   const onLeave = cases.filter((c) => c.employeeStatus === "On Leave").length;
-  const total = injuryTypeData.reduce((s, d) => s + d.value, 0);
 
   const recent = cases.slice(0, 5);
+
+  // Derive injury type breakdown from live cases
+  const injuryTypeData = useMemo(() => {
+    const counts = {};
+    cases.forEach((c) => {
+      const type = c.injuryType || "Other";
+      counts[type] = (counts[type] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [cases]);
+
+  // Derive incidents per month (rolling 6 months) from live cases
+  const incidentsOverTime = useMemo(() => {
+    const now = new Date();
+    const months = {};
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = d.toLocaleDateString("en-US", { month: "short" });
+      months[key] = { month: key, incidents: 0 };
+    }
+    cases.forEach((c) => {
+      if (!c.incidentDate) return;
+      const key = new Date(c.incidentDate).toLocaleDateString("en-US", { month: "short" });
+      if (months[key]) months[key].incidents++;
+    });
+    return Object.values(months);
+  }, [cases]);
+
+  // Derive shift breakdown from live cases
+  const shiftData = useMemo(() => {
+    const counts = { Day: 0, Evening: 0, Night: 0 };
+    cases.forEach((c) => {
+      if (c.shift && counts[c.shift] !== undefined) counts[c.shift]++;
+    });
+    return Object.entries(counts).map(([shift, incidents]) => ({ shift, incidents }));
+  }, [cases]);
+
+  const total = injuryTypeData.reduce((s, d) => s + d.value, 0);
+
+  // Dynamic chart titles
+  const topType = injuryTypeData[0];
+  const topTypePct = total > 0 && topType ? Math.round((topType.value / total) * 100) : 0;
+  const donutTitle = total > 0 && topType ? `${topType.name} leads at ${topTypePct}%` : "No incidents recorded";
+
+  const totalShift = shiftData.reduce((s, d) => s + d.incidents, 0);
+  const topShift = [...shiftData].sort((a, b) => b.incidents - a.incidents)[0];
+  const topShiftPct = totalShift > 0 ? Math.round((topShift.incidents / totalShift) * 100) : 0;
+  const shiftTitle = totalShift > 0 ? `${topShift.shift} shift accounts for ${topShiftPct}%` : "No shift data yet";
+
+  const currentMonthYear = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
   // Month-over-month change
   const last = incidentsOverTime[incidentsOverTime.length - 1]?.incidents;
@@ -183,7 +234,7 @@ export default function AdminDashboard() {
         <div className="mb-8 flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-slate-800">Safety Dashboard</h1>
-            <p className="text-sm text-slate-500 mt-1">Sunrise Nursing & Rehabilitation · March 2025</p>
+            <p className="text-sm text-slate-500 mt-1">Sunrise Nursing & Rehabilitation · {currentMonthYear}</p>
           </div>
           <Link to="/admin/cases" className="text-xs font-semibold px-4 py-2 rounded-lg border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-sm">
             View all cases →
@@ -196,8 +247,8 @@ export default function AdminDashboard() {
         {/* KPI row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <KpiCard label="Total Cases" value={cases.length} sub="All time" accentColor={NAVY} />
-          <KpiCard label="Open Cases" value={openCases} sub="Require resolution" trend={20} accentColor="#f59e0b" urgent={openCases > 0} />
-          <KpiCard label="Pending Review" value={pendingReview} sub="Awaiting admin action" trend={0} accentColor="#1e6091" />
+          <KpiCard label="Open Cases" value={openCases} sub="Require resolution" accentColor="#f59e0b" urgent={openCases > 0} />
+          <KpiCard label="Pending Review" value={pendingReview} sub="Awaiting admin action" accentColor="#1e6091" />
           <KpiCard label="Staff on Leave" value={onLeave} sub="Work-related injury" trend={0} accentColor="#f43f5e" />
         </div>
 
@@ -238,7 +289,7 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
             <div className="mb-4">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">By injury type</p>
-              <h3 className="text-base font-bold text-slate-800">Musculoskeletal leads at 35%</h3>
+              <h3 className="text-base font-bold text-slate-800">{donutTitle}</h3>
             </div>
             <div className="relative">
               <ResponsiveContainer width="100%" height={180}>
@@ -277,7 +328,7 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
             <div className="mb-4">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">By shift</p>
-              <h3 className="text-base font-bold text-slate-800">Day shift accounts for 44%</h3>
+              <h3 className="text-base font-bold text-slate-800">{shiftTitle}</h3>
             </div>
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={shiftData} layout="vertical" margin={{ left: 0, right: 30, top: 4, bottom: 4 }}>
@@ -295,7 +346,7 @@ export default function AdminDashboard() {
           <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
             <div className="mb-4">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">AI-detected trends</p>
-              <h3 className="text-base font-bold text-slate-800">3 items require your attention</h3>
+              <h3 className="text-base font-bold text-slate-800">{pendingReview + openCases} items require your attention</h3>
             </div>
             <div className="space-y-3">
               {[
