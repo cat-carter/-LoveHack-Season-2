@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npx remotion studio",
-    "build": "npx remotion render"
+    "build": "npx remotion render src/Root.jsx IncidentIQ out/IncidentIQ.mp4 --browser-executable=/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome"
   },
   "keywords": [],
   "author": "",

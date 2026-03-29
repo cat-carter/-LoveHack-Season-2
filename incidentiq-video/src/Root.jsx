@@ -5,7 +5,7 @@ const RemotionRoot = () => (
   <Composition
     id="IncidentIQ"
     component={IncidentIQVideo}
-    durationInFrames={3300}
+    durationInFrames={3690}
     fps={30}
     width={1920}
     height={1080}
